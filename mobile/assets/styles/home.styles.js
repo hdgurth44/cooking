@@ -18,13 +18,15 @@ export const homeStyles = StyleSheet.create({
     paddingBottom: 16,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
+    gap: 20,
   },
   welcomeText: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: "800",
     color: COLORS.text,
     letterSpacing: -0.5,
+    flex: 1,
   },
   featuredSection: {
     paddingHorizontal: 20,

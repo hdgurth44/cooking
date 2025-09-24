@@ -9,12 +9,13 @@ import {
 import React, { useEffect, useState } from "react";
 import { homeStyles } from "../../assets/styles/home.styles";
 import { useRouter } from "expo-router";
-import { MealAPI } from "../../services/mealAPI";
+import { SupabaseAPI } from "../../services/supabaseAPI";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
 import CategoryFilter from "../../components/CategoryFilter";
 import RecipeCard from "../../components/RecipeCard";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -29,24 +30,20 @@ const HomeScreen = () => {
     try {
       setLoading(true);
       const [apiCategories, randomMeals, featuredMeal] = await Promise.all([
-        MealAPI.getCategories(),
-        MealAPI.getRandomMeals(12),
-        MealAPI.getRandomMeal(),
+        SupabaseAPI.getCategories(),
+        SupabaseAPI.getRandomRecipes(12),
+        SupabaseAPI.getRandomRecipe(),
       ]);
-      const transformedCategories = apiCategories.map((cat, index) => ({
-        id: index + 1,
-        name: cat.strCategory,
-        image: cat.strCategoryThumb,
-        description: cat.strCategoryDescription,
-      }));
-      setCategories(transformedCategories);
+      
+      // Categories are already transformed in SupabaseAPI.getCategories()
+      setCategories(apiCategories);
 
       const transformedMeals = randomMeals
-        .map((meal) => MealAPI.transformMealData(meal))
+        .map((meal) => SupabaseAPI.transformRecipeData(meal))
         .filter((meal) => meal !== null);
       setRecipes(transformedMeals);
 
-      const transformedFeatured = MealAPI.transformMealData(featuredMeal);
+      const transformedFeatured = SupabaseAPI.transformRecipeData(featuredMeal);
       setFeaturedRecipe(transformedFeatured);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -56,14 +53,17 @@ const HomeScreen = () => {
   };
   const loadCategoryData = async (category) => {
     try {
-      const meals = await MealAPI.filterByCategory(category);
+      setLoading(true);
+      const meals = await SupabaseAPI.getRecipesByCategory(category);
       const transformedMeals = meals
-        .map((meal) => MealAPI.transformMealData(meal))
+        .map((meal) => SupabaseAPI.transformRecipeData(meal))
         .filter((meal) => meal !== null);
       setRecipes(transformedMeals);
     } catch (error) {
       console.error("Error loading category data:", error);
       setRecipes([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,23 +95,14 @@ const HomeScreen = () => {
         }
         contentContainerStyle={homeStyles.scrollContent}
       >
-        {/* Welcome section with 3 images */}
+        {/* Welcome section with chicken image and title */}
         <View style={homeStyles.welcomeSection}>
           <Image
             source={require("../../assets/images/chicken.png")}
             style={{ width: 100, height: 100 }}
             contentFit="contain"
           />
-          <Image
-            source={require("../../assets/images/lamb.png")}
-            style={{ width: 100, height: 100 }}
-            contentFit="contain"
-          />
-          <Image
-            source={require("../../assets/images/pork.png")}
-            style={{ width: 100, height: 100 }}
-            contentFit="contain"
-          />
+          <Text style={homeStyles.welcomeText}>Hello, Thea!</Text>
         </View>
         {/* Featured recipe section */}
         {featuredRecipe && (
@@ -191,7 +182,9 @@ const HomeScreen = () => {
           <Text style={homeStyles.sectionTitle}>
             {selectedCategory || "All Recipes"}
           </Text>
-          {recipes.length > 0 ? (
+          {loading ? (
+            <LoadingSpinner message="Loading recipes..." />
+          ) : recipes.length > 0 ? (
             <FlatList
               data={recipes}
               renderItem={({ item }) => <RecipeCard recipe={item} />}
