@@ -1,4 +1,4 @@
-import { View, Text, Alert, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, Alert, ScrollView, TouchableOpacity, Modal } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-expo";
@@ -21,6 +21,8 @@ const RecipeDetailScreen = () => {
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showWebView, setShowWebView] = useState(false);
+  const [webViewUrl, setWebViewUrl] = useState("");
 
   const { user } = useUser();
   const userId = user?.id;
@@ -50,15 +52,10 @@ const RecipeDetailScreen = () => {
     loadRecipeDetail();
   }, [recipeId, userId]);
 
-  const getYouTubeEmbedUrl = (url) => {
-    if (!url) return null;
-    // example url: https://www.youtube.com/watch?v=mTvlmY4vCug
-    if (url.includes("v=")) {
-      const videoId = url.split("v=")[1];
-      return `https://www.youtube.com/embed/${videoId}`;
-    }
-    // Handle other YouTube URL formats or return as-is for non-YouTube URLs
-    return url;
+  const handleOpenOriginalRecipe = (url) => {
+    if (!url) return;
+    setWebViewUrl(url);
+    setShowWebView(true);
   };
 
   const handleToggleSave = async () => {
@@ -175,29 +172,37 @@ const RecipeDetailScreen = () => {
             </View>
           </View>
 
-          {recipe.youtubeUrl && getYouTubeEmbedUrl(recipe.youtubeUrl) && (
-            <View style={recipeDetailStyles.sectionContainer}>
-              <View style={recipeDetailStyles.sectionTitleRow}>
-                <LinearGradient
-                  colors={["#FF0000", "#CC0000"]}
-                  style={recipeDetailStyles.sectionIcon}
-                >
-                  <Ionicons name="play" size={16} color={COLORS.white} />
-                </LinearGradient>
+          {/* OVERVIEW SECTION */}
+          <View style={recipeDetailStyles.sectionContainer}>
+            <View style={recipeDetailStyles.sectionTitleRow}>
+              <LinearGradient
+                colors={["#4ECDC4", "#44A08D"]}
+                style={recipeDetailStyles.sectionIcon}
+              >
+                <Ionicons name="information-circle" size={16} color={COLORS.white} />
+              </LinearGradient>
 
-                <Text style={recipeDetailStyles.sectionTitle}>Video Tutorial</Text>
-              </View>
-
-              <View style={recipeDetailStyles.videoCard}>
-                <WebView
-                  style={recipeDetailStyles.webview}
-                  source={{ uri: getYouTubeEmbedUrl(recipe.youtubeUrl) }}
-                  allowsFullscreenVideo
-                  mediaPlaybackRequiresUserAction={false}
-                />
-              </View>
+              <Text style={recipeDetailStyles.sectionTitle}>Overview</Text>
             </View>
-          )}
+
+            {/* Summary/Description with inline link */}
+            {(recipe.description || recipe.youtubeUrl) && (
+              <View style={recipeDetailStyles.overviewCard}>
+                {recipe.description && (
+                  <Text style={recipeDetailStyles.descriptionText}>{recipe.description}</Text>
+                )}
+                {recipe.youtubeUrl && (
+                  <TouchableOpacity
+                    style={recipeDetailStyles.inlineLinkContainer}
+                    onPress={() => handleOpenOriginalRecipe(recipe.youtubeUrl)}
+                  >
+                    <Text style={recipeDetailStyles.inlineLinkText}>See original recipe</Text>
+                    <Ionicons name="arrow-forward" size={14} color={COLORS.primary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
 
           {/* INGREDIENTS SECTION */}
           <View style={recipeDetailStyles.sectionContainer}>
@@ -284,6 +289,36 @@ const RecipeDetailScreen = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* In-App Browser Modal */}
+      <Modal
+        visible={showWebView}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <View style={recipeDetailStyles.webViewModal}>
+          <View style={recipeDetailStyles.webViewHeader}>
+            <TouchableOpacity
+              style={recipeDetailStyles.webViewCloseButton}
+              onPress={() => setShowWebView(false)}
+            >
+              <Ionicons name="close" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+            <Text style={recipeDetailStyles.webViewTitle}>Original Recipe</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          <WebView
+            source={{ uri: webViewUrl }}
+            style={recipeDetailStyles.webView}
+            startInLoadingState={true}
+            renderLoading={() => (
+              <View style={recipeDetailStyles.webViewLoading}>
+                <LoadingSpinner message="Loading original recipe..." />
+              </View>
+            )}
+          />
+        </View>
+      </Modal>
     </View>
   );
 };
