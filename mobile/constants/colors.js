@@ -88,6 +88,17 @@ const roseGoldTheme = {
   shadow: "#000000",
 };
 
+const catppuccinTheme = {
+  primary: "#8839ef",
+  background: "#eff1f5",
+  text: "#4c4f69",
+  border: "#bcc0cc",
+  white: "#ffffff",
+  textLight: "#6c6f85",
+  card: "#ffffff",
+  shadow: "#000000",
+};
+
 export const THEMES = {
   coffee: coffeeTheme,
   forest: forestTheme,
@@ -97,7 +108,8 @@ export const THEMES = {
   mint: mintTheme,
   midnight: midnightTheme,
   roseGold: roseGoldTheme,
+  catppuccin: catppuccinTheme,
 };
 
 // 👇 change this to switch theme
-export const COLORS = THEMES.midnight;
+export const COLORS = THEMES.catppuccin;

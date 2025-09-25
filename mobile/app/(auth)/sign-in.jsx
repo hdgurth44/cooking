@@ -15,39 +15,49 @@ import { authStyles } from "../../assets/styles/auth.styles";
 import { Image } from "expo-image";
 import { COLORS } from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
+import { getSignInErrorMessage } from "../../utils/authErrors";
 
 const SignInScreen = () => {
   const router = useRouter();
 
   const { signIn, setActive, isLoaded } = useSignIn();
 
-  const [email, setEmail] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   // Whether we show the password or not, with false being the default.
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Handle the submission of the sign-in form
   const handleSignIn = async () => {
-    if (!email || !password) {
-      Alert.alert("Please fill in all fields");
+    if (!emailAddress || !password) {
+      Alert.alert("Missing Information", "Please fill in all fields to continue.");
       return;
     }
     if (!isLoaded) return;
 
     setLoading(true);
+
+    // Start the sign-in process using the email and password provided
     try {
       const signInAttempt = await signIn.create({
-        emailAddress: email,
+        identifier: emailAddress,
         password,
       });
+
+      // If sign-in process is complete, set the created session as active and redirect the user
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
+        router.replace("/(tabs)");
       } else {
-        Alert.alert("Error", "Something went wrong");
+        // If the status isn't complete, check why. User might need to complete further steps.
+        Alert.alert("Sign In Failed", "Unable to complete sign in. Please try again.");
         console.error(JSON.stringify(signInAttempt, null, 2));
       }
     } catch (err) {
-      Alert.alert("Error", err.errors?.[0]?.message || "Something went wrong");
+      // See https://clerk.com/docs/custom-flows/error-handling for more info on error handling
+      const userFriendlyMessage = getSignInErrorMessage(err);
+      Alert.alert("Sign In Failed", userFriendlyMessage);
       console.error(JSON.stringify(err, null, 2));
     } finally {
       setLoading(false);
@@ -81,8 +91,8 @@ const SignInScreen = () => {
                 style={authStyles.textInput}
                 placeholder="Enter your email"
                 placeholderTextColor={COLORS.textLight}
-                value={email}
-                onChangeText={setEmail}
+                value={emailAddress}
+                onChangeText={setEmailAddress}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
@@ -110,31 +120,28 @@ const SignInScreen = () => {
                 />
               </TouchableOpacity>
             </View>
-            {/* Sign in button */}
-            <TouchableOpacity
-              style={[
-                authStyles.authButton, // Always applies this style
-                loading && authStyles.buttonDisabled, // Applies disabled style if loading is true. Main use case for [].
-              ]}
-              disabled={loading}
-              onPress={handleSignIn}
-              activeOpacity={0.8}
-            >
-              <Text style={authStyles.buttonText}>
-                {loading ? "Signing in..." : "Sign In"}
-              </Text>
-            </TouchableOpacity>
-            {/* Sign up link */}
-            <TouchableOpacity
-              style={authStyles.linkContainer}
-              onPress={() => router.push("/(auth)/sign-up")}
-            >
-              <Text style={authStyles.linkText}>
-                Don&apos;t have an account?{" "}
-                <Text style={authStyles.link}>Sign Up</Text>
-              </Text>
-            </TouchableOpacity>
           </View>
+          {/* Sign in button */}
+          <TouchableOpacity
+            style={authStyles.authButton}
+            onPress={handleSignIn}
+            activeOpacity={0.8}
+            disabled={loading}
+          >
+            <Text style={authStyles.buttonText}>
+              {loading ? "Signing in..." : "Sign In"}
+            </Text>
+          </TouchableOpacity>
+          {/* Sign up link */}
+          <TouchableOpacity
+            style={authStyles.linkContainer}
+            onPress={() => router.push("/(auth)/sign-up")}
+          >
+            <Text style={authStyles.linkText}>
+              Don&apos;t have an account?{" "}
+              <Text style={authStyles.link}>Sign Up</Text>
+            </Text>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>

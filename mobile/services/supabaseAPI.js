@@ -218,7 +218,7 @@ export const SupabaseAPI = {
       const { data: favorites, error } = await supabase
         .from('recipes')
         .select('*')
-        .eq('h_pin', true) // Harry's pinned recipes
+        .eq('h_pin', true) // Get recipes marked as favorites via h_pin field
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -236,8 +236,7 @@ export const SupabaseAPI = {
   // Toggle favorite status for a recipe
   toggleFavorite: async (recipeId, userId, isFavorite) => {
     try {
-      // For now, we'll update the h_pin field for Harry's favorites
-      // You can extend this to use a separate favorites table later
+      // Update the h_pin field for the recipe
       const { data, error } = await supabase
         .from('recipes')
         .update({ 
@@ -245,15 +244,15 @@ export const SupabaseAPI = {
           updated_at: new Date().toISOString()
         })
         .eq('id', recipeId)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('Error toggling favorite:', error);
         return null;
       }
 
-      return data;
+      // Return the first (and should be only) updated record
+      return data && data.length > 0 ? data[0] : null;
     } catch (error) {
       console.error('Error toggling favorite:', error);
       return null;
