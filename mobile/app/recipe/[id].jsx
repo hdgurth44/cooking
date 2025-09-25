@@ -31,7 +31,7 @@ const RecipeDetailScreen = () => {
     const loadRecipeDetail = async () => {
       setLoading(true);
       try {
-        const recipeData = await SupabaseAPI.getRecipeById(recipeId);
+        const recipeData = await SupabaseAPI.getRecipeById(recipeId, userId);
         if (recipeData) {
           const transformedRecipe = SupabaseAPI.transformRecipeData(recipeData);
           setRecipe(transformedRecipe);

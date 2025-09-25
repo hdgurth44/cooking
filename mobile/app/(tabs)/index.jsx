@@ -9,6 +9,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { homeStyles } from "../../assets/styles/home.styles";
 import { useRouter } from "expo-router";
+import { useAuth } from "@clerk/clerk-expo";
 import { SupabaseAPI } from "../../services/supabaseAPI";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +20,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 
 const HomeScreen = () => {
   const router = useRouter();
+  const { userId } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [recipes, setRecipes] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -30,9 +32,9 @@ const HomeScreen = () => {
     try {
       setLoading(true);
       const [apiCategories, randomMeals, featuredMeal] = await Promise.all([
-        SupabaseAPI.getCategories(),
-        SupabaseAPI.getRandomRecipes(12),
-        SupabaseAPI.getRandomRecipe(),
+        SupabaseAPI.getCategories(userId),
+        SupabaseAPI.getRandomRecipes(12, userId),
+        SupabaseAPI.getRandomRecipe(userId),
       ]);
       
       // Categories are already transformed in SupabaseAPI.getCategories()
@@ -54,7 +56,7 @@ const HomeScreen = () => {
   const loadCategoryData = async (category) => {
     try {
       setLoading(true);
-      const meals = await SupabaseAPI.getRecipesByCategory(category);
+      const meals = await SupabaseAPI.getRecipesByCategory(category, userId);
       const transformedMeals = meals
         .map((meal) => SupabaseAPI.transformRecipeData(meal))
         .filter((meal) => meal !== null);

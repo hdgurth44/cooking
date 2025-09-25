@@ -1,14 +1,31 @@
 import { supabase } from "../utils/supabase";
 
+// Admin user ID for shared recipes
+const ADMIN_USER_ID = 'user_33A5bJH53B8avmfLhp5tCMEHweN';
+
+// Helper function to add user-specific filtering
+const addUserFilter = (query, userId) => {
+  if (!userId) {
+    // If no user ID provided, only show admin/shared recipes
+    return query.eq('user_id', ADMIN_USER_ID);
+  }
+
+  // Show user's own recipes AND admin/shared recipes
+  return query.or(`user_id.eq.${userId},user_id.eq.${ADMIN_USER_ID}`);
+};
+
 export const SupabaseAPI = {
   // Get all recipes with optional limit
-  getAllRecipes: async (limit = 50) => {
+  getAllRecipes: async (limit = 50, userId = null) => {
     try {
-      const { data: recipes, error } = await supabase
+      let query = supabase
         .from('recipes')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(limit);
+
+      query = addUserFilter(query, userId);
+      const { data: recipes, error } = await query;
 
       if (error) {
         console.error('Error fetching recipes:', error);
@@ -23,13 +40,15 @@ export const SupabaseAPI = {
   },
 
   // Get a single recipe by ID
-  getRecipeById: async (id) => {
+  getRecipeById: async (id, userId = null) => {
     try {
-      const { data: recipe, error } = await supabase
+      let query = supabase
         .from('recipes')
         .select('*')
-        .eq('id', id)
-        .single();
+        .eq('id', id);
+
+      query = addUserFilter(query, userId);
+      const { data: recipe, error } = await query.single();
 
       if (error) {
         console.error('Error fetching recipe by ID:', error);
@@ -44,12 +63,15 @@ export const SupabaseAPI = {
   },
 
   // Get random recipes
-  getRandomRecipes: async (count = 6) => {
+  getRandomRecipes: async (count = 6, userId = null) => {
     try {
-      // First get the total count of recipes
-      const { count: totalCount, error: countError } = await supabase
+      // First get the total count of recipes for this user
+      let countQuery = supabase
         .from('recipes')
         .select('*', { count: 'exact', head: true });
+
+      countQuery = addUserFilter(countQuery, userId);
+      const { count: totalCount, error: countError } = await countQuery;
 
       if (countError || !totalCount) {
         console.error('Error getting recipe count:', countError);
@@ -60,10 +82,13 @@ export const SupabaseAPI = {
       const maxOffset = Math.max(0, totalCount - count);
       const randomOffset = Math.floor(Math.random() * (maxOffset + 1));
 
-      const { data: recipes, error } = await supabase
+      let query = supabase
         .from('recipes')
         .select('*')
         .range(randomOffset, randomOffset + count - 1);
+
+      query = addUserFilter(query, userId);
+      const { data: recipes, error } = await query;
 
       if (error) {
         console.error('Error fetching random recipes:', error);
@@ -78,9 +103,9 @@ export const SupabaseAPI = {
   },
 
   // Get a single random recipe for featured section
-  getRandomRecipe: async () => {
+  getRandomRecipe: async (userId = null) => {
     try {
-      const recipes = await SupabaseAPI.getRandomRecipes(1);
+      const recipes = await SupabaseAPI.getRandomRecipes(1, userId);
       return recipes.length > 0 ? recipes[0] : null;
     } catch (error) {
       console.error('Error fetching random recipe:', error);
@@ -89,18 +114,21 @@ export const SupabaseAPI = {
   },
 
   // Search recipes by title
-  searchRecipesByTitle: async (query) => {
+  searchRecipesByTitle: async (query, userId = null) => {
     try {
       if (!query || query.trim() === '') {
-        return await SupabaseAPI.getRandomRecipes(12);
+        return await SupabaseAPI.getRandomRecipes(12, userId);
       }
 
-      const { data: recipes, error } = await supabase
+      let searchQuery = supabase
         .from('recipes')
         .select('*')
         .ilike('title', `%${query}%`)
         .order('created_at', { ascending: false })
         .limit(20);
+
+      searchQuery = addUserFilter(searchQuery, userId);
+      const { data: recipes, error } = await searchQuery;
 
       if (error) {
         console.error('Error searching recipes by title:', error);
@@ -115,14 +143,17 @@ export const SupabaseAPI = {
   },
 
   // Search recipes by ingredients
-  searchRecipesByIngredient: async (ingredient) => {
+  searchRecipesByIngredient: async (ingredient, userId = null) => {
     try {
-      const { data: recipes, error } = await supabase
+      let searchQuery = supabase
         .from('recipes')
         .select('*')
         .contains('ingredients', [ingredient])
         .order('created_at', { ascending: false })
         .limit(20);
+
+      searchQuery = addUserFilter(searchQuery, userId);
+      const { data: recipes, error } = await searchQuery;
 
       if (error) {
         console.error('Error searching recipes by ingredient:', error);
@@ -137,14 +168,17 @@ export const SupabaseAPI = {
   },
 
   // Get recipes by category (using tags array)
-  getRecipesByCategory: async (category) => {
+  getRecipesByCategory: async (category, userId = null) => {
     try {
-      const { data: recipes, error } = await supabase
+      let categoryQuery = supabase
         .from('recipes')
         .select('*')
         .contains('tags', [category])
         .order('created_at', { ascending: false })
         .limit(20);
+
+      categoryQuery = addUserFilter(categoryQuery, userId);
+      const { data: recipes, error } = await categoryQuery;
 
       if (error) {
         console.error('Error fetching recipes by category:', error);
@@ -159,12 +193,15 @@ export const SupabaseAPI = {
   },
 
   // Get unique categories from tags
-  getCategories: async () => {
+  getCategories: async (userId = null) => {
     try {
-      const { data: recipes, error } = await supabase
+      let categoriesQuery = supabase
         .from('recipes')
         .select('tags')
         .not('tags', 'is', null);
+
+      categoriesQuery = addUserFilter(categoriesQuery, userId);
+      const { data: recipes, error } = await categoriesQuery;
 
       if (error) {
         console.error('Error fetching categories:', error);
@@ -191,18 +228,18 @@ export const SupabaseAPI = {
   },
 
   // Advanced search combining title and ingredients
-  searchRecipes: async (query) => {
+  searchRecipes: async (query, userId = null) => {
     try {
       if (!query || query.trim() === '') {
-        return await SupabaseAPI.getRandomRecipes(12);
+        return await SupabaseAPI.getRandomRecipes(12, userId);
       }
 
       // Search by title first
-      let results = await SupabaseAPI.searchRecipesByTitle(query);
-      
+      let results = await SupabaseAPI.searchRecipesByTitle(query, userId);
+
       // If no results from title search, try ingredient search
       if (results.length === 0) {
-        results = await SupabaseAPI.searchRecipesByIngredient(query);
+        results = await SupabaseAPI.searchRecipesByIngredient(query, userId);
       }
 
       return results.slice(0, 12); // Limit to 12 results
@@ -215,11 +252,14 @@ export const SupabaseAPI = {
   // Get favorite recipes for a user
   getFavoriteRecipes: async (userId) => {
     try {
-      const { data: favorites, error } = await supabase
+      let favoritesQuery = supabase
         .from('recipes')
         .select('*')
         .eq('h_pin', true) // Get recipes marked as favorites via h_pin field
         .order('created_at', { ascending: false });
+
+      favoritesQuery = addUserFilter(favoritesQuery, userId);
+      const { data: favorites, error } = await favoritesQuery;
 
       if (error) {
         console.error('Error fetching favorite recipes:', error);

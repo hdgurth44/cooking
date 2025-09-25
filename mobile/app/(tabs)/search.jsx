@@ -7,6 +7,7 @@ import {
   FlatList,
 } from "react-native";
 import { SupabaseAPI } from "../../services/supabaseAPI";
+import { useAuth } from "@clerk/clerk-expo";
 import { useDebounce } from "../../hooks/useDebounce";
 import { searchStyles } from "../../assets/styles/search.styles";
 import { COLORS } from "../../constants/colors";
@@ -15,6 +16,7 @@ import RecipeCard from "../../components/RecipeCard";
 import LoadingSpinner from "../../components/LoadingSpinner";
 
 const SearchScreen = () => {
+  const { userId } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,14 +27,14 @@ const SearchScreen = () => {
   const performSearch = async (query) => {
     // if no search query
     if (!query.trim()) {
-      const randomMeals = await SupabaseAPI.getRandomRecipes(12);
+      const randomMeals = await SupabaseAPI.getRandomRecipes(12, userId);
       return randomMeals
         .map((meal) => SupabaseAPI.transformRecipeData(meal))
         .filter((meal) => meal !== null);
     }
 
     // Use the combined search method from SupabaseAPI
-    const results = await SupabaseAPI.searchRecipes(query);
+    const results = await SupabaseAPI.searchRecipes(query, userId);
 
     return results
       .slice(0, 12)
