@@ -277,6 +277,37 @@ export const recipeDetailStyles = StyleSheet.create({
   ingredientCheck: {
     opacity: 0.5,
   },
+  completedIngredientsSection: {
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.textLight + "20",
+    paddingTop: 16,
+  },
+  completedIngredientsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  completedIngredientsTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.textLight,
+  },
+  completedIngredientsGrid: {
+    gap: 8,
+    marginTop: 8,
+  },
+  completedIngredientCard: {
+    backgroundColor: COLORS.textLight + "10",
+    opacity: 0.8,
+  },
+  completedIngredientText: {
+    textDecorationLine: "line-through",
+    color: COLORS.textLight,
+    opacity: 0.7,
+  },
   instructionsContainer: {
     gap: 16,
   },

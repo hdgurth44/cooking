@@ -1,6 +1,6 @@
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import SafeScreen from "../components/SafeScreen";
 
@@ -9,7 +9,13 @@ export default function RootLayout() {
     <ClerkProvider tokenCache={tokenCache}>
       <SafeScreen>
         <StatusBar style="dark" />
-        <Slot />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            gestureEnabled: true,
+            gestureDirection: "horizontal",
+          }}
+        />
       </SafeScreen>
     </ClerkProvider>
   );

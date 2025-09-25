@@ -112,4 +112,4 @@ export const THEMES = {
 };
 
 // 👇 change this to switch theme
-export const COLORS = THEMES.catppuccin;
+export const COLORS = THEMES.midnight;

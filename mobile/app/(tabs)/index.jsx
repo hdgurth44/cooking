@@ -104,7 +104,7 @@ const HomeScreen = () => {
             style={{ width: 100, height: 100 }}
             contentFit="contain"
           />
-          <Text style={homeStyles.welcomeText}>Hello, Thea!</Text>
+          <Text style={homeStyles.welcomeText}>Hello hello!</Text>
         </View>
         {/* Featured recipe section */}
         {featuredRecipe && (
