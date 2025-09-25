@@ -252,21 +252,41 @@ export const SupabaseAPI = {
   // Get favorite recipes for a user
   getFavoriteRecipes: async (userId) => {
     try {
-      let favoritesQuery = supabase
-        .from('recipes')
-        .select('*')
-        .eq('h_pin', true) // Get recipes marked as favorites via h_pin field
-        .order('created_at', { ascending: false });
+      if (!userId) {
+        return [];
+      }
 
-      favoritesQuery = addUserFilter(favoritesQuery, userId);
-      const { data: favorites, error } = await favoritesQuery;
+      const { data: favorites, error } = await supabase
+        .from('user_favorites')
+        .select(`
+          recipe_id,
+          created_at,
+          recipes (
+            id,
+            title,
+            summary,
+            image_url,
+            prep_time,
+            servings,
+            ingredients,
+            instructions,
+            tags,
+            link,
+            user_id,
+            created_at,
+            updated_at
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching favorite recipes:', error);
         return [];
       }
 
-      return favorites || [];
+      // Extract the recipe data from the joined result
+      return favorites?.map(fav => fav.recipes).filter(recipe => recipe) || [];
     } catch (error) {
       console.error('Error fetching favorite recipes:', error);
       return [];
@@ -276,23 +296,45 @@ export const SupabaseAPI = {
   // Toggle favorite status for a recipe
   toggleFavorite: async (recipeId, userId, isFavorite) => {
     try {
-      // Update the h_pin field for the recipe
-      const { data, error } = await supabase
-        .from('recipes')
-        .update({ 
-          h_pin: isFavorite,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', recipeId)
-        .select();
-
-      if (error) {
-        console.error('Error toggling favorite:', error);
+      if (!userId) {
+        console.error('User ID required for favorites');
         return null;
       }
 
-      // Return the first (and should be only) updated record
-      return data && data.length > 0 ? data[0] : null;
+      if (isFavorite) {
+        // Add to favorites
+        const { data, error } = await supabase
+          .from('user_favorites')
+          .insert({
+            user_id: userId,
+            recipe_id: recipeId
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error adding favorite:', error);
+          return null;
+        }
+
+        return data;
+      } else {
+        // Remove from favorites
+        const { data, error } = await supabase
+          .from('user_favorites')
+          .delete()
+          .eq('user_id', userId)
+          .eq('recipe_id', recipeId)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error removing favorite:', error);
+          return null;
+        }
+
+        return data;
+      }
     } catch (error) {
       console.error('Error toggling favorite:', error);
       return null;
@@ -302,18 +344,24 @@ export const SupabaseAPI = {
   // Check if recipe is favorited by user
   isFavorite: async (recipeId, userId) => {
     try {
-      const { data: recipe, error } = await supabase
-        .from('recipes')
-        .select('h_pin')
-        .eq('id', recipeId)
+      if (!userId) {
+        return false;
+      }
+
+      const { data: favorite, error } = await supabase
+        .from('user_favorites')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('recipe_id', recipeId)
         .single();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which is expected when not favorited
         console.error('Error checking favorite status:', error);
         return false;
       }
 
-      return recipe?.h_pin || false;
+      return !!favorite;
     } catch (error) {
       console.error('Error checking favorite status:', error);
       return false;
