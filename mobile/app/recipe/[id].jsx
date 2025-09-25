@@ -19,6 +19,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { COLORS } from "../../constants/colors";
 
 import { Ionicons } from "@expo/vector-icons";
+import { ClipboardIcon } from "../../components/icons";
 import { WebView } from "react-native-webview";
 
 const RecipeDetailScreen = () => {
@@ -33,6 +34,7 @@ const RecipeDetailScreen = () => {
   const [webViewUrl, setWebViewUrl] = useState("");
   const [checkedIngredients, setCheckedIngredients] = useState(new Set());
   const [showCompletedIngredients, setShowCompletedIngredients] = useState(false);
+  const [isClipboardActive, setIsClipboardActive] = useState(false);
 
   const { user } = useUser();
   const userId = user?.id;
@@ -97,6 +99,13 @@ const RecipeDetailScreen = () => {
       
       const ingredientsList = uncheckedIngredients.join("\n");
       await Clipboard.setStringAsync(ingredientsList);
+      
+      // Activate clipboard icon for 1 second
+      setIsClipboardActive(true);
+      setTimeout(() => {
+        setIsClipboardActive(false);
+      }, 1000);
+      
       Alert.alert("Success", `${uncheckedIngredients.length} remaining ingredients copied to clipboard!`);
     } catch (error) {
       console.error("Error copying ingredients:", error);
@@ -255,8 +264,8 @@ const RecipeDetailScreen = () => {
               >
                 <View flexDirection="row" alignItems="center" gap={4}>
                   <Text style={recipeDetailStyles.countText}>Copy</Text>
-                  <Ionicons
-                    name="clipboard-outline"
+                  <ClipboardIcon
+                    focused={isClipboardActive}
                     size={20}
                     color={COLORS.primary}
                   />

@@ -1,11 +1,11 @@
 import React from "react";
 import { Redirect, Tabs } from "expo-router";
 import { useAuth } from "@clerk/clerk-expo";
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { View } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { COLORS } from "../../constants/colors";
+import { FavoritesIcon, IndexIcon, CartIcon, SearchIcon, CreateIcon } from "../../components/icons";
 
 const TabsLayout = () => {
   const { isSignedIn } = useAuth();
@@ -120,8 +120,8 @@ const TabsLayout = () => {
         alignItems: 'center',
         zIndex: 10,
       }}>
-        <Ionicons
-          name="sparkles"
+        <CreateIcon
+          focused={focused}
           color={focused ? COLORS.primary : COLORS.textLight}
           size={28}
         />
@@ -153,8 +153,8 @@ const TabsLayout = () => {
         name="index"
         options={{
           title: "",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="restaurant" color={color} size={size + 4} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <IndexIcon focused={focused} color={color} size={size + 4} />
           ),
         }}
       />
@@ -163,8 +163,8 @@ const TabsLayout = () => {
         name="search"
         options={{
           title: "",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" color={color} size={size + 4} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <SearchIcon focused={focused} color={color} size={size + 4} />
           ),
         }}
       />
@@ -183,8 +183,8 @@ const TabsLayout = () => {
         name="cart"
         options={{
           title: "",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cart" color={color} size={size + 4} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <CartIcon focused={focused} color={color} size={size + 4} />
           ),
         }}
       />
@@ -193,8 +193,8 @@ const TabsLayout = () => {
         name="favorites"
         options={{
           title: "",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="heart" color={color} size={size + 4} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <FavoritesIcon focused={focused} color={color} size={size + 4} />
           ),
         }}
       />
