@@ -92,4 +92,43 @@ export const authStyles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: "600",
   },
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 30,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: COLORS.border,
+  },
+  dividerText: {
+    fontSize: 14,
+    color: COLORS.textLight,
+    marginHorizontal: 16,
+  },
+  socialButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  googleButton: {
+    backgroundColor: "#ffffff",
+    borderColor: COLORS.border,
+  },
+  appleButton: {
+    backgroundColor: "#000000",
+    borderColor: "#000000",
+  },
+  socialIcon: {
+    marginRight: 12,
+  },
+  socialButtonText: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
 });
