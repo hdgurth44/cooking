@@ -2,9 +2,9 @@ import {
   View,
   Text,
   Alert,
-  ScrollView,
   TouchableOpacity,
   Modal,
+  Animated,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -15,11 +15,9 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import { Image } from "expo-image";
 
 import { recipeDetailStyles } from "../../assets/styles/recipe-detail.styles";
-import { LinearGradient } from "expo-linear-gradient";
 import { COLORS } from "../../constants/colors";
 
 import { Ionicons } from "@expo/vector-icons";
-import { ClipboardIcon } from "../../components/icons";
 import { WebView } from "react-native-webview";
 
 const RecipeDetailScreen = () => {
@@ -33,8 +31,12 @@ const RecipeDetailScreen = () => {
   const [showWebView, setShowWebView] = useState(false);
   const [webViewUrl, setWebViewUrl] = useState("");
   const [checkedIngredients, setCheckedIngredients] = useState(new Set());
-  const [showCompletedIngredients, setShowCompletedIngredients] = useState(false);
-  const [isClipboardActive, setIsClipboardActive] = useState(false);
+  const [showCompletedIngredients, setShowCompletedIngredients] =
+    useState(false);
+  const [scrollY] = useState(new Animated.Value(0));
+  const [activeTab, setActiveTab] = useState("ingredients");
+  const [servings, setServings] = useState(2); // Default servings
+  const [checkedSteps, setCheckedSteps] = useState(new Set());
 
   const { user } = useUser();
   const userId = user?.id;
@@ -47,6 +49,9 @@ const RecipeDetailScreen = () => {
         if (recipeData) {
           const transformedRecipe = SupabaseAPI.transformRecipeData(recipeData);
           setRecipe(transformedRecipe);
+
+          // Set initial servings from recipe data
+          setServings(transformedRecipe.servings || 2);
 
           // Check if recipe is favorited
           if (userId) {
@@ -74,7 +79,7 @@ const RecipeDetailScreen = () => {
   };
 
   const toggleIngredient = (index) => {
-    setCheckedIngredients(prev => {
+    setCheckedIngredients((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(index)) {
         newSet.delete(index);
@@ -85,28 +90,65 @@ const RecipeDetailScreen = () => {
     });
   };
 
+  const toggleStep = (index) => {
+    setCheckedSteps((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
+
+  const adjustServings = (newServings) => {
+    if (newServings >= 1 && newServings <= 20) {
+      setServings(newServings);
+    }
+  };
+
+  const getScaledIngredient = (ingredient) => {
+    if (!recipe?.servings || servings === recipe.servings) {
+      return ingredient;
+    }
+
+    const scaleFactor = servings / recipe.servings;
+
+    // Try to extract and scale numbers in the ingredient
+    return ingredient.replace(/(\d+(?:\.\d+)?)/g, (match) => {
+      const number = parseFloat(match);
+      const scaled = number * scaleFactor;
+      // Round to 2 decimal places and remove unnecessary trailing zeros
+      return (Math.round(scaled * 100) / 100).toString().replace(/\.?0+$/, "");
+    });
+  };
+
   const handleCopyIngredients = async () => {
     try {
       const uncheckedIngredients = recipe.ingredients
         .map((ingredient, index) => ({ ingredient, index }))
         .filter(({ index }) => !checkedIngredients.has(index))
-        .map(({ ingredient }, displayIndex) => `${displayIndex + 1}. ${ingredient}`);
-      
+        .map(
+          ({ ingredient }, displayIndex) =>
+            `${displayIndex + 1}. ${getScaledIngredient(ingredient)}`
+        );
+
       if (uncheckedIngredients.length === 0) {
-        Alert.alert("Info", "All ingredients are checked off! Nothing to copy.");
+        Alert.alert(
+          "Info",
+          "All ingredients are checked off! Nothing to copy."
+        );
         return;
       }
-      
+
       const ingredientsList = uncheckedIngredients.join("\n");
       await Clipboard.setStringAsync(ingredientsList);
-      
-      // Activate clipboard icon for 1 second
-      setIsClipboardActive(true);
-      setTimeout(() => {
-        setIsClipboardActive(false);
-      }, 1000);
-      
-      Alert.alert("Success", `${uncheckedIngredients.length} remaining ingredients copied to clipboard!`);
+
+      Alert.alert(
+        "Success",
+        `${uncheckedIngredients.length} remaining ingredients copied to clipboard (scaled for ${servings} servings)!`
+      );
     } catch (error) {
       console.error("Error copying ingredients:", error);
       Alert.alert("Error", "Failed to copy ingredients. Please try again.");
@@ -150,9 +192,54 @@ const RecipeDetailScreen = () => {
 
   if (loading) return <LoadingSpinner message="Loading recipe details..." />;
 
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
   return (
     <View style={recipeDetailStyles.container}>
-      <ScrollView>
+      {/* Fixed Header */}
+      <Animated.View
+        style={[recipeDetailStyles.fixedHeader, { opacity: headerOpacity }]}
+      >
+        <TouchableOpacity
+          style={recipeDetailStyles.headerBackButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+        </TouchableOpacity>
+
+        <Text style={recipeDetailStyles.fixedHeaderTitle} numberOfLines={1}>
+          {recipe?.title}
+        </Text>
+
+        <TouchableOpacity
+          style={[
+            recipeDetailStyles.headerSaveButton,
+            { backgroundColor: isSaving ? COLORS.gray : COLORS.primary },
+          ]}
+          onPress={handleToggleSave}
+          disabled={isSaving}
+        >
+          <Ionicons
+            name={
+              isSaving ? "hourglass" : isSaved ? "bookmark" : "bookmark-outline"
+            }
+            size={20}
+            color={COLORS.white}
+          />
+        </TouchableOpacity>
+      </Animated.View>
+
+      <Animated.ScrollView
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+      >
         {/* HEADER */}
         <View style={recipeDetailStyles.headerContainer}>
           <View style={recipeDetailStyles.imageContainer}>
@@ -162,11 +249,6 @@ const RecipeDetailScreen = () => {
               contentFit="cover"
             />
           </View>
-
-          <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.5)", "rgba(0,0,0,0.9)"]}
-            style={recipeDetailStyles.gradientOverlay}
-          />
 
           <View style={recipeDetailStyles.floatingButtons}>
             <TouchableOpacity
@@ -197,228 +279,301 @@ const RecipeDetailScreen = () => {
               />
             </TouchableOpacity>
           </View>
-
-          {/* Title Section */}
-          <View style={recipeDetailStyles.titleSection}>
-            <View style={recipeDetailStyles.categoryBadge}>
-              <Text style={recipeDetailStyles.categoryText}>
-                {recipe.category}
-              </Text>
-            </View>
-            <Text style={recipeDetailStyles.recipeTitle}>{recipe.title}</Text>
-            {recipe.cookTime && (
-              <View style={recipeDetailStyles.locationRow}>
-                <Ionicons name="time" size={16} color={COLORS.white} />
-                <Text style={recipeDetailStyles.locationText}>
-                  {recipe.cookTime}
-                </Text>
-              </View>
-            )}
-          </View>
         </View>
 
         <View style={recipeDetailStyles.contentSection}>
-          {/* OVERVIEW SECTION */}
-          <View style={recipeDetailStyles.sectionContainer}>
-            <View style={recipeDetailStyles.sectionTitleRow}>
-              <Text style={recipeDetailStyles.sectionTitle}>👀 Overview</Text>
+          {/* Recipe Title and Metadata Section */}
+          <View style={recipeDetailStyles.recipeMetaSection}>
+            <Text style={recipeDetailStyles.recipeMainTitle}>
+              {recipe.title}
+            </Text>
+
+            {/* Tags and Time */}
+            <View style={recipeDetailStyles.categoriesContainer}>
+              {/* Display all tags from Supabase */}
+              {recipe.originalData?.tags?.map((tag, index) => (
+                <View key={index} style={recipeDetailStyles.categoryBadgeLight}>
+                  <Text style={recipeDetailStyles.categoryTextLight}>
+                    {tag}
+                  </Text>
+                </View>
+              ))}
+
+              {/* Prep time as last, less prominent badge */}
+              {recipe.cookTime && (
+                <View style={recipeDetailStyles.timeBadge}>
+                  <Text style={recipeDetailStyles.timeBadgeText}>
+                    {recipe.cookTime}
+                  </Text>
+                </View>
+              )}
             </View>
 
-            {/* Summary/Description with inline link */}
-            {(recipe.description || recipe.youtubeUrl) && (
-              <View style={recipeDetailStyles.overviewCard}>
-                {recipe.description && (
-                  <Text style={recipeDetailStyles.descriptionText}>
-                    {recipe.description}
-                  </Text>
-                )}
-                {recipe.youtubeUrl && (
-                  <TouchableOpacity
-                    style={recipeDetailStyles.inlineLinkContainer}
-                    onPress={() => handleOpenOriginalRecipe(recipe.youtubeUrl)}
-                  >
-                    <Text style={recipeDetailStyles.inlineLinkText}>
-                      See original recipe
-                    </Text>
-                    <Ionicons
-                      name="arrow-forward"
-                      size={14}
-                      color={COLORS.primary}
-                    />
-                  </TouchableOpacity>
-                )}
-              </View>
+            {/* Summary/Description */}
+            {recipe.description && (
+              <Text style={recipeDetailStyles.summaryText}>
+                {recipe.description}
+              </Text>
+            )}
+
+            {/* Original Recipe Link */}
+            {recipe.youtubeUrl && (
+              <TouchableOpacity
+                style={recipeDetailStyles.originalLinkButton}
+                onPress={() => handleOpenOriginalRecipe(recipe.youtubeUrl)}
+              >
+                <Text style={recipeDetailStyles.originalLinkText}>
+                  See original recipe
+                </Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={16}
+                  color={COLORS.primary}
+                />
+              </TouchableOpacity>
             )}
           </View>
-
-          {/* INGREDIENTS SECTION */}
-          <View style={recipeDetailStyles.sectionContainer}>
-            <View style={recipeDetailStyles.sectionTitleRow}>
-              <Text style={recipeDetailStyles.sectionTitle}>
-                🛒 Ingredients
-              </Text>
-              <TouchableOpacity
-                // style={recipeDetailStyles.countBadge}
-                onPress={handleCopyIngredients}
-                activeOpacity={0.7}
+          {/* Tab Navigation */}
+          <View style={recipeDetailStyles.tabContainer}>
+            <TouchableOpacity
+              style={[
+                recipeDetailStyles.tab,
+                activeTab === "ingredients" && recipeDetailStyles.activeTab,
+              ]}
+              onPress={() => setActiveTab("ingredients")}
+            >
+              <Text
+                style={[
+                  recipeDetailStyles.tabText,
+                  activeTab === "ingredients" &&
+                    recipeDetailStyles.activeTabText,
+                ]}
               >
-                <View flexDirection="row" alignItems="center" gap={4}>
-                  <Text style={recipeDetailStyles.countText}>Copy</Text>
-                  <ClipboardIcon
-                    focused={isClipboardActive}
-                    size={20}
-                    color={COLORS.primary}
-                  />
-                </View>
-              </TouchableOpacity>
-            </View>
+                Ingredients
+              </Text>
+            </TouchableOpacity>
 
-            {/* Unchecked Ingredients */}
-            <View style={recipeDetailStyles.ingredientsGrid}>
-              {recipe.ingredients.map((ingredient, index) => {
-                const isChecked = checkedIngredients.has(index);
-                if (isChecked) return null; // Skip checked ingredients
-                return (
-                  <TouchableOpacity 
-                    key={index} 
-                    style={recipeDetailStyles.ingredientCard}
-                    onPress={() => toggleIngredient(index)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={recipeDetailStyles.ingredientText}>
-                      {ingredient}
-                    </Text>
-                    <View style={recipeDetailStyles.ingredientCheck}>
-                      <Ionicons
-                        name="checkmark-circle-outline"
-                        size={20}
-                        color={COLORS.textLight}
-                      />
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            <TouchableOpacity
+              style={[
+                recipeDetailStyles.tab,
+                activeTab === "steps" && recipeDetailStyles.activeTab,
+              ]}
+              onPress={() => setActiveTab("steps")}
+            >
+              <Text
+                style={[
+                  recipeDetailStyles.tabText,
+                  activeTab === "steps" && recipeDetailStyles.activeTabText,
+                ]}
+              >
+                Steps
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-            {/* Marked as Done Section */}
-            {checkedIngredients.size > 0 && (
-              <View style={recipeDetailStyles.completedIngredientsSection}>
+          {/* Tab Content */}
+          {activeTab === "ingredients" && (
+            <View style={recipeDetailStyles.tabContent}>
+              {/* Servings Adjustment */}
+              <View style={recipeDetailStyles.servingsContainer}>
                 <TouchableOpacity
-                  style={recipeDetailStyles.completedIngredientsHeader}
-                  onPress={() => setShowCompletedIngredients(!showCompletedIngredients)}
-                  activeOpacity={0.7}
+                  style={recipeDetailStyles.servingButton}
+                  onPress={() => adjustServings(servings - 1)}
+                  disabled={servings <= 1}
                 >
-                  <Text style={recipeDetailStyles.completedIngredientsTitle}>
-                    Marked as done ({checkedIngredients.size})
-                  </Text>
                   <Ionicons
-                    name={showCompletedIngredients ? "chevron-up" : "chevron-down"}
+                    name="remove"
                     size={20}
-                    color={COLORS.textLight}
+                    color={servings <= 1 ? COLORS.textLight : COLORS.text}
                   />
                 </TouchableOpacity>
 
-                {showCompletedIngredients && (
-                  <View style={recipeDetailStyles.completedIngredientsGrid}>
-                    {recipe.ingredients.map((ingredient, index) => {
-                      const isChecked = checkedIngredients.has(index);
-                      if (!isChecked) return null; // Skip unchecked ingredients
-                      return (
-                        <TouchableOpacity 
-                          key={index} 
-                          style={[recipeDetailStyles.ingredientCard, recipeDetailStyles.completedIngredientCard]}
-                          onPress={() => toggleIngredient(index)}
-                          activeOpacity={0.7}
-                        >
-                          <Text 
-                            style={[
-                              recipeDetailStyles.ingredientText,
-                              recipeDetailStyles.completedIngredientText
-                            ]}
-                          >
-                            {ingredient}
-                          </Text>
-                          <View style={recipeDetailStyles.ingredientCheck}>
-                            <Ionicons
-                              name="checkmark-circle"
-                              size={20}
-                              color={COLORS.primary}
-                            />
-                          </View>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                )}
-              </View>
-            )}
-          </View>
-
-          {/* INSTRUCTIONS SECTION */}
-          <View style={recipeDetailStyles.sectionContainer}>
-            <View style={recipeDetailStyles.sectionTitleRow}>
-              <Text style={recipeDetailStyles.sectionTitle}>
-                🧐 Instructions
-              </Text>
-              <View style={recipeDetailStyles.countBadge}>
-                <Text style={recipeDetailStyles.countText}>
-                  {recipe.instructions.length}
-                </Text>
-              </View>
-            </View>
-
-            <View style={recipeDetailStyles.instructionsContainer}>
-              {recipe.instructions.map((instruction, index) => (
-                <View key={index} style={recipeDetailStyles.instructionCard}>
-                  <LinearGradient
-                    colors={[COLORS.primary, COLORS.primary + "CC"]}
-                    style={recipeDetailStyles.stepIndicator}
-                  >
-                    <Text style={recipeDetailStyles.stepNumber}>
-                      {index + 1}
-                    </Text>
-                  </LinearGradient>
-                  <View style={recipeDetailStyles.instructionContent}>
-                    <Text style={recipeDetailStyles.instructionText}>
-                      {instruction}
-                    </Text>
-                    <View style={recipeDetailStyles.instructionFooter}>
-                      <Text style={recipeDetailStyles.stepLabel}>
-                        Step {index + 1}
-                      </Text>
-                      <TouchableOpacity
-                        style={recipeDetailStyles.completeButton}
-                      >
-                        <Ionicons
-                          name="checkmark"
-                          size={16}
-                          color={COLORS.primary}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+                <View style={recipeDetailStyles.servingsDisplay}>
+                  <Text style={recipeDetailStyles.servingsNumber}>
+                    {servings}
+                  </Text>
+                  <Text style={recipeDetailStyles.servingsLabel}>Servings</Text>
                 </View>
-              ))}
-            </View>
-          </View>
 
-          <TouchableOpacity
-            style={recipeDetailStyles.primaryButton}
-            onPress={handleToggleSave}
-            disabled={isSaving}
-          >
-            <LinearGradient
-              colors={[COLORS.primary, COLORS.primary + "CC"]}
-              style={recipeDetailStyles.buttonGradient}
-            >
-              <Ionicons name="heart" size={20} color={COLORS.white} />
-              <Text style={recipeDetailStyles.buttonText}>
-                {isSaved ? "Remove from Favorites" : "Add to Favorites"}
+                <TouchableOpacity
+                  style={recipeDetailStyles.servingButton}
+                  onPress={() => adjustServings(servings + 1)}
+                  disabled={servings >= 20}
+                >
+                  <Ionicons
+                    name="add"
+                    size={20}
+                    color={servings >= 20 ? COLORS.textLight : COLORS.text}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Unchecked Ingredients */}
+              <View style={recipeDetailStyles.ingredientsList}>
+                {recipe.ingredients.map((ingredient, index) => {
+                  const isChecked = checkedIngredients.has(index);
+                  if (isChecked) return null; // Skip checked ingredients
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={recipeDetailStyles.ingredientItem}
+                      onPress={() => toggleIngredient(index)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={recipeDetailStyles.ingredientText}>
+                        {getScaledIngredient(ingredient)}
+                      </Text>
+                      <View style={recipeDetailStyles.ingredientCheck}>
+                        <Ionicons
+                          name="checkmark-circle-outline"
+                          size={20}
+                          color={COLORS.textLight}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Marked as Done Section */}
+              {checkedIngredients.size > 0 && (
+                <View style={recipeDetailStyles.completedIngredientsSection}>
+                  <TouchableOpacity
+                    style={recipeDetailStyles.completedIngredientsHeader}
+                    onPress={() =>
+                      setShowCompletedIngredients(!showCompletedIngredients)
+                    }
+                    activeOpacity={0.7}
+                  >
+                    <Text style={recipeDetailStyles.completedIngredientsTitle}>
+                      Marked as done ({checkedIngredients.size})
+                    </Text>
+                    <Ionicons
+                      name={
+                        showCompletedIngredients ? "chevron-up" : "chevron-down"
+                      }
+                      size={20}
+                      color={COLORS.textLight}
+                    />
+                  </TouchableOpacity>
+
+                  {showCompletedIngredients && (
+                    <View style={recipeDetailStyles.completedIngredientsList}>
+                      {recipe.ingredients.map((ingredient, index) => {
+                        const isChecked = checkedIngredients.has(index);
+                        if (!isChecked) return null; // Skip unchecked ingredients
+                        return (
+                          <TouchableOpacity
+                            key={index}
+                            style={[
+                              recipeDetailStyles.ingredientItem,
+                              recipeDetailStyles.completedIngredientItem,
+                            ]}
+                            onPress={() => toggleIngredient(index)}
+                            activeOpacity={0.7}
+                          >
+                            <Text
+                              style={[
+                                recipeDetailStyles.ingredientText,
+                                recipeDetailStyles.completedIngredientText,
+                              ]}
+                            >
+                              {getScaledIngredient(ingredient)}
+                            </Text>
+                            <View style={recipeDetailStyles.ingredientCheck}>
+                              <Ionicons
+                                name="checkmark-circle"
+                                size={20}
+                                color={COLORS.primary}
+                              />
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
+                </View>
+              )}
+              {/* Subtitle */}
+              <Text style={recipeDetailStyles.ingredientsSubtitle}>
+                Checked off items are not copied / added to shopping list.
               </Text>
-            </LinearGradient>
-          </TouchableOpacity>
+            </View>
+          )}
+
+          {activeTab === "steps" && (
+            <View style={recipeDetailStyles.tabContent}>
+              <View style={recipeDetailStyles.stepsList}>
+                {recipe.instructions.map((instruction, index) => {
+                  const isChecked = checkedSteps.has(index);
+                  return (
+                    <View key={index} style={recipeDetailStyles.stepCard}>
+                      <View style={recipeDetailStyles.stepHeader}>
+                        <Text style={recipeDetailStyles.stepTitle}>
+                          Step {index + 1}
+                        </Text>
+                        <TouchableOpacity
+                          style={[
+                            recipeDetailStyles.stepCheckbox,
+                            isChecked && recipeDetailStyles.stepCheckboxChecked,
+                          ]}
+                          onPress={() => toggleStep(index)}
+                        >
+                          {isChecked && (
+                            <Ionicons
+                              name="checkmark"
+                              size={16}
+                              color={COLORS.white}
+                            />
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                      <Text
+                        style={[
+                          recipeDetailStyles.stepText,
+                          isChecked && recipeDetailStyles.stepTextCompleted,
+                        ]}
+                      >
+                        {instruction}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+          {/* Action Buttons */}
+          <View style={recipeDetailStyles.actionButtonsContainer}>
+            <TouchableOpacity
+              style={recipeDetailStyles.secondaryActionButton}
+              onPress={handleCopyIngredients}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name="copy-outline"
+                size={20}
+                color={COLORS.textLight}
+              />
+              <Text style={recipeDetailStyles.secondaryActionButtonText}>
+                Copy
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={recipeDetailStyles.primaryActionButton}
+              onPress={() => {
+                /* Shopping list functionality - to be implemented */
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="bag-outline" size={20} color={COLORS.white} />
+              <Text style={recipeDetailStyles.primaryActionButtonText}>
+                Add to meal prep
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* In-App Browser Modal */}
       <Modal
