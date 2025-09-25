@@ -28,6 +28,8 @@ const RecipeDetailScreen = () => {
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isInMealPrep, setIsInMealPrep] = useState(false);
+  const [isMealPrepSaving, setIsMealPrepSaving] = useState(false);
   const [showWebView, setShowWebView] = useState(false);
   const [webViewUrl, setWebViewUrl] = useState("");
   const [checkedIngredients, setCheckedIngredients] = useState(new Set());
@@ -53,13 +55,19 @@ const RecipeDetailScreen = () => {
           // Set initial servings from recipe data
           setServings(transformedRecipe.servings || 2);
 
-          // Check if recipe is favorited
+          // Check if recipe is favorited and in meal prep
           if (userId) {
             const favoriteStatus = await SupabaseAPI.isFavorite(
               recipeId,
               userId
             );
             setIsSaved(favoriteStatus);
+            
+            const mealPrepStatus = await SupabaseAPI.isInMealPrep(
+              recipeId,
+              userId
+            );
+            setIsInMealPrep(mealPrepStatus);
           }
         }
       } catch (error) {
@@ -187,6 +195,41 @@ const RecipeDetailScreen = () => {
       Alert.alert("Error", "Failed to update favorites. Please try again.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleToggleMealPrep = async () => {
+    if (!userId) {
+      Alert.alert("Error", "Please log in to add to meal prep");
+      return;
+    }
+
+    setIsMealPrepSaving(true);
+
+    try {
+      const newMealPrepStatus = !isInMealPrep;
+      const result = await SupabaseAPI.toggleMealPrep(
+        recipeId,
+        userId,
+        newMealPrepStatus
+      );
+
+      if (result) {
+        setIsInMealPrep(newMealPrepStatus);
+        Alert.alert(
+          "Success",
+          newMealPrepStatus
+            ? "Recipe added to meal prep!"
+            : "Recipe removed from meal prep!"
+        );
+      } else {
+        Alert.alert("Error", "Failed to update meal prep. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error toggling meal prep:", error);
+      Alert.alert("Error", "Failed to update meal prep. Please try again.");
+    } finally {
+      setIsMealPrepSaving(false);
     }
   };
 
@@ -407,6 +450,10 @@ const RecipeDetailScreen = () => {
                   />
                 </TouchableOpacity>
               </View>
+              {/* Subtitle */}
+              <Text style={recipeDetailStyles.ingredientsSubtitle}>
+                Check off items you have at home.
+              </Text>
 
               {/* Unchecked Ingredients */}
               <View style={recipeDetailStyles.ingredientsList}>
@@ -494,10 +541,7 @@ const RecipeDetailScreen = () => {
                   )}
                 </View>
               )}
-              {/* Subtitle */}
-              <Text style={recipeDetailStyles.ingredientsSubtitle}>
-                Checked off items are not copied / added to shopping list.
-              </Text>
+              
             </View>
           )}
 
@@ -560,15 +604,26 @@ const RecipeDetailScreen = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={recipeDetailStyles.primaryActionButton}
-              onPress={() => {
-                /* Shopping list functionality - to be implemented */
-              }}
+              style={[
+                recipeDetailStyles.primaryActionButton,
+                isInMealPrep && recipeDetailStyles.primaryActionButtonActive
+              ]}
+              onPress={handleToggleMealPrep}
               activeOpacity={0.7}
+              disabled={isMealPrepSaving}
             >
-              <Ionicons name="bag-outline" size={20} color={COLORS.white} />
+              <Ionicons 
+                name={isInMealPrep ? "bag" : "bag-outline"} 
+                size={20} 
+                color={COLORS.white} 
+              />
               <Text style={recipeDetailStyles.primaryActionButtonText}>
-                Add to meal prep
+                {isMealPrepSaving 
+                  ? "Updating..." 
+                  : isInMealPrep 
+                    ? "Remove meal"
+                    : "Add meal prep"
+                }
               </Text>
             </TouchableOpacity>
           </View>

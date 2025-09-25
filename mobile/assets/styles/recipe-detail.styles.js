@@ -416,6 +416,7 @@ export const recipeDetailStyles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: COLORS.textLight + "20",
     paddingTop: 16,
+    paddingHorizontal: 20,
   },
   completedIngredientsHeader: {
     flexDirection: "row",
@@ -512,7 +513,7 @@ export const recipeDetailStyles = StyleSheet.create({
   ingredientsSubtitle: {
     fontSize: 14,
     color: COLORS.textLight,
-    textAlign: "left",
+    textAlign: "center",
     marginBottom: 16,
     fontStyle: "italic",
   },

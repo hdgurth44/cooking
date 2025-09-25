@@ -368,6 +368,125 @@ export const SupabaseAPI = {
     }
   },
 
+  // Get meal prep recipes for a user
+  getMealPrepRecipes: async (userId) => {
+    try {
+      if (!userId) {
+        return [];
+      }
+
+      const { data: mealprep, error } = await supabase
+        .from('user_mealprep')
+        .select(`
+          recipe_id,
+          created_at,
+          recipes (
+            id,
+            title,
+            summary,
+            image_url,
+            prep_time,
+            servings,
+            ingredients,
+            instructions,
+            tags,
+            link,
+            user_id,
+            created_at,
+            updated_at
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching meal prep recipes:', error);
+        return [];
+      }
+
+      // Extract the recipe data from the joined result
+      return mealprep?.map(prep => prep.recipes).filter(recipe => recipe) || [];
+    } catch (error) {
+      console.error('Error fetching meal prep recipes:', error);
+      return [];
+    }
+  },
+
+  // Toggle meal prep status for a recipe
+  toggleMealPrep: async (recipeId, userId, isInMealPrep) => {
+    try {
+      if (!userId) {
+        console.error('User ID required for meal prep');
+        return null;
+      }
+
+      if (isInMealPrep) {
+        // Add to meal prep
+        const { data, error } = await supabase
+          .from('user_mealprep')
+          .insert({
+            user_id: userId,
+            recipe_id: recipeId
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error adding to meal prep:', error);
+          return null;
+        }
+
+        return data;
+      } else {
+        // Remove from meal prep
+        const { data, error } = await supabase
+          .from('user_mealprep')
+          .delete()
+          .eq('user_id', userId)
+          .eq('recipe_id', recipeId)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error removing from meal prep:', error);
+          return null;
+        }
+
+        return data;
+      }
+    } catch (error) {
+      console.error('Error toggling meal prep:', error);
+      return null;
+    }
+  },
+
+  // Check if recipe is in meal prep for user
+  isInMealPrep: async (recipeId, userId) => {
+    try {
+      if (!userId) {
+        return false;
+      }
+
+      const { data: mealprep, error } = await supabase
+        .from('user_mealprep')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('recipe_id', recipeId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which is expected when not in meal prep
+        console.error('Error checking meal prep status:', error);
+        return false;
+      }
+
+      return !!mealprep;
+    } catch (error) {
+      console.error('Error checking meal prep status:', error);
+      return false;
+    }
+  },
+
   // Transform Supabase recipe data to match app format (similar to MealAPI.transformMealData)
   transformRecipeData: (recipe) => {
     if (!recipe) return null;

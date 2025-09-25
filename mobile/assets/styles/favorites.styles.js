@@ -12,6 +12,12 @@ export const favoritesStyles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
   },
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: COLORS.text,
+    paddingHorizontal: 20,
+  },
   shareButton: {
     width: 40,
     height: 40,
@@ -205,7 +211,14 @@ export const favoritesStyles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: COLORS.text,
+    marginBottom: 12,
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: COLORS.textLight,
+    textAlign: "center",
     marginBottom: 24,
+    lineHeight: 22,
   },
   exploreButton: {
     flexDirection: "row",
