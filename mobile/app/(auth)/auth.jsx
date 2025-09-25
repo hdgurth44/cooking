@@ -142,13 +142,16 @@ const AuthScreen = () => {
             <View style={authStyles.inputContainer}>
               <TextInput
                 style={authStyles.textInput}
-                placeholder="Email address"
+                placeholder="What's your e-mail?"
                 placeholderTextColor={COLORS.textLight}
                 value={emailAddress}
                 onChangeText={setEmailAddress}
+                onSubmitEditing={handleContinue}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
+                returnKeyType="go"
+                enablesReturnKeyAutomatically={true}
               />
             </View>
           </View>

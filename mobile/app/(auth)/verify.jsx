@@ -80,39 +80,6 @@ const VerifyScreen = () => {
     router.back();
   };
 
-  const handleResendCode = async () => {
-    if (!signInLoaded || !signUpLoaded) return;
-
-    setLoading(true);
-
-    try {
-      if (mode === "signin") {
-        // Resend sign-in code
-        const firstFactor = signIn.supportedFirstFactors?.find(
-          (factor) => factor.strategy === "email_code"
-        );
-
-        if (firstFactor) {
-          await signIn.prepareFirstFactor({
-            strategy: "email_code",
-            emailAddressId: firstFactor.emailAddressId,
-          });
-          Alert.alert("Code Sent", "A new verification code has been sent to your email.");
-        }
-      } else if (mode === "signup") {
-        // Resend sign-up code
-        await signUp.prepareEmailAddressVerification({
-          strategy: "email_code"
-        });
-        Alert.alert("Code Sent", "A new verification code has been sent to your email.");
-      }
-    } catch (err) {
-      console.error("Resend code error:", JSON.stringify(err, null, 2));
-      Alert.alert("Error", "Unable to resend code. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <View style={authStyles.container}>
@@ -147,10 +114,13 @@ const VerifyScreen = () => {
                 placeholderTextColor={COLORS.textLight}
                 value={code}
                 onChangeText={setCode}
+                onSubmitEditing={handleVerification}
                 keyboardType="number-pad"
                 autoCapitalize="none"
                 maxLength={6}
                 autoFocus={true}
+                returnKeyType="done"
+                enablesReturnKeyAutomatically={true}
               />
             </View>
           </View>
@@ -170,23 +140,11 @@ const VerifyScreen = () => {
           {/* Action Links */}
           <TouchableOpacity
             style={authStyles.linkContainer}
-            onPress={handleResendCode}
-            activeOpacity={0.8}
-            disabled={loading}
-          >
-            <Text style={authStyles.linkText}>
-              Didn&apos;t receive a code?{" "}
-              <Text style={authStyles.link}>Resend</Text>
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={authStyles.linkContainer}
             onPress={handleChangeEmail}
             activeOpacity={0.8}
           >
             <Text style={authStyles.linkText}>
-              <Text style={authStyles.link}>Change email</Text>
+              <Text style={authStyles.link}>Go back</Text>
             </Text>
           </TouchableOpacity>
         </ScrollView>

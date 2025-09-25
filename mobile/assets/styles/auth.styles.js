@@ -16,7 +16,7 @@ export const authStyles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingTop: 10,
   },
   imageContainer: {
     height: height * 0.3,
@@ -25,15 +25,15 @@ export const authStyles = StyleSheet.create({
     alignItems: "center",
   },
   image: {
-    width: 320,
-    height: 320,
+    width: 200,
+    height: 200,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
     color: COLORS.text,
     textAlign: "center",
-    marginBottom: 40,
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
@@ -45,7 +45,7 @@ export const authStyles = StyleSheet.create({
     flex: 1,
   },
   inputContainer: {
-    marginBottom: 20,
+    // marginBottom: 10,
     position: "relative",
   },
   textInput: {
@@ -69,7 +69,7 @@ export const authStyles = StyleSheet.create({
     paddingVertical: 18,
     borderRadius: 12,
     marginTop: 20,
-    marginBottom: 30,
+    // marginBottom: 30,
   },
   buttonDisabled: {
     opacity: 0.7,
@@ -83,6 +83,7 @@ export const authStyles = StyleSheet.create({
   linkContainer: {
     alignItems: "center",
     paddingBottom: 20,
+    paddingTop: 10,
   },
   linkText: {
     fontSize: 16,
