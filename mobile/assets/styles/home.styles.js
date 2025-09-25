@@ -1,32 +1,17 @@
 import { StyleSheet, Dimensions } from "react-native";
-import { COLORS } from "../../constants/colors";
+import { COLORS, TYPOGRAPHY } from "../../constants/colors";
+import { sharedStyles } from "./shared.styles";
 
 const { width } = Dimensions.get("window");
 const cardWidth = (width - 48) / 2;
 
 export const homeStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
+  // Use shared styles for common patterns
+  ...sharedStyles,
+  
+  // Override scrollContent for home screen (less padding than other screens)
   scrollContent: {
     paddingBottom: 32,
-  },
-  welcomeSection: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    gap: 20,
-  },
-  welcomeText: {
-    fontSize: 36,
-    fontWeight: "800",
-    color: COLORS.text,
-    letterSpacing: -0.5,
-    flex: 1,
   },
   featuredSection: {
     paddingHorizontal: 20,
@@ -68,15 +53,15 @@ export const homeStyles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   featuredBadgeText: {
+    ...TYPOGRAPHY.caption,
     color: COLORS.white,
-    fontSize: 12,
     fontWeight: "600",
   },
   featuredContent: {
     justifyContent: "flex-end",
   },
   featuredTitle: {
-    fontSize: 24,
+    ...TYPOGRAPHY.h3,
     fontWeight: "800",
     color: COLORS.white,
     marginBottom: 12,
@@ -94,7 +79,7 @@ export const homeStyles = StyleSheet.create({
     gap: 4,
   },
   metaText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.body2,
     color: COLORS.white,
     fontWeight: "600",
   },
@@ -106,6 +91,7 @@ export const homeStyles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
+    ...TYPOGRAPHY.h4,
     fontSize: 22,
     fontWeight: "800",
     color: COLORS.text,
@@ -124,14 +110,13 @@ export const homeStyles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: "700",
+    ...TYPOGRAPHY.h4,
     color: COLORS.text,
     marginTop: 16,
     marginBottom: 8,
   },
   emptyDescription: {
-    fontSize: 14,
+    ...TYPOGRAPHY.body2,
     color: COLORS.textLight,
     textAlign: "center",
   },
@@ -179,7 +164,7 @@ export const homeStyles = StyleSheet.create({
     borderColor: COLORS.white,
   },
   categoryText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption,
     fontWeight: "600",
     color: COLORS.text,
     textAlign: "center",
@@ -189,72 +174,3 @@ export const homeStyles = StyleSheet.create({
   },
 });
 
-export const recipeCardStyles = StyleSheet.create({
-  container: {
-    width: cardWidth,
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    marginBottom: 16,
-    shadowColor: COLORS.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    overflow: "hidden",
-  },
-  imageContainer: {
-    position: "relative",
-    height: 140,
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: COLORS.border,
-  },
-  content: {
-    padding: 12,
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginBottom: 4,
-    lineHeight: 20,
-  },
-  description: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    marginBottom: 8,
-    lineHeight: 16,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  timeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  timeText: {
-    fontSize: 11,
-    color: COLORS.textLight,
-    marginLeft: 4,
-    fontWeight: "500",
-  },
-  servingsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  servingsText: {
-    fontSize: 11,
-    color: COLORS.textLight,
-    marginLeft: 4,
-    fontWeight: "500",
-  },
-});

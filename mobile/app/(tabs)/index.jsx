@@ -182,7 +182,7 @@ const HomeScreen = () => {
         {/* Recipes section */}
         <View style={homeStyles.recipesSection}>
           <Text style={homeStyles.sectionTitle}>
-            {selectedCategory || "All Recipes"}
+            {selectedCategory || "Featured Recipes"}
           </Text>
           {loading ? (
             <LoadingSpinner message="Loading recipes..." />

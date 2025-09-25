@@ -13,8 +13,7 @@ import { Image } from "expo-image";
 import { useUser } from "@clerk/clerk-expo";
 import { SupabaseAPI } from "../../services/supabaseAPI";
 import { COLORS } from "../../constants/colors";
-import { homeStyles } from "../../assets/styles/home.styles";
-import { recipeDetailStyles } from "../../assets/styles/recipe-detail.styles";
+import { cartStyles } from "../../assets/styles/cart.styles";
 import NoMealPrepFound from "../../components/NoMealPrepFound";
 import LoadingSpinner from "../../components/LoadingSpinner";
 
@@ -185,7 +184,7 @@ const MealPrepScreen = () => {
   // If no recipes in meal prep, show empty state with header
   if (mealPrepRecipes.length === 0) {
     return (
-      <View style={homeStyles.container}>
+      <View style={cartStyles.container}>
         <ScrollView 
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -195,16 +194,16 @@ const MealPrepScreen = () => {
               tintColor={COLORS.primary}
             />
           }
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={cartStyles.scrollContent}
         >
           {/* Header - exact same style as populated state */}
-          <View style={homeStyles.welcomeSection}>
+          <View style={cartStyles.welcomeSection}>
             <Image
               source={require("../../assets/images/lamb.png")}
               style={{ width: 100, height: 100 }}
               contentFit="contain"
             />
-            <Text style={homeStyles.welcomeText}>Meal Prep</Text>
+            <Text style={cartStyles.welcomeText}>Meal Prep</Text>
           </View>
 
           {/* Empty state component */}
@@ -216,7 +215,7 @@ const MealPrepScreen = () => {
 
 
   return (
-    <View style={homeStyles.container}>
+    <View style={cartStyles.container}>
       <ScrollView 
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -226,26 +225,26 @@ const MealPrepScreen = () => {
             tintColor={COLORS.primary}
           />
         }
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={cartStyles.scrollContent}
       >
-        {/* Header - exact same style as home */}
-        <View style={homeStyles.welcomeSection}>
+        {/* Header - consistent with other screens */}
+        <View style={cartStyles.welcomeSection}>
           <Image
             source={require("../../assets/images/lamb.png")}
             style={{ width: 100, height: 100 }}
             contentFit="contain"
           />
-          <Text style={homeStyles.welcomeText}>Meal Prep</Text>
+          <Text style={cartStyles.welcomeText}>Meal Prep</Text>
         </View>
 
         {/* Selected Recipes Section */}
-        <View style={styles.recipesSection}>
-          <Text style={styles.sectionTitle2}>On the menu this week</Text>
+        <View style={cartStyles.recipesSection}>
+          <Text style={cartStyles.sectionTitle}>On the menu this week</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={styles.recipesScrollView}
-            contentContainerStyle={styles.recipesContainer}
+            style={cartStyles.recipesScrollView}
+            contentContainerStyle={cartStyles.recipesContainer}
           >
             {mealPrepRecipes.map((recipe) => {
               const isSelected = selectedRecipes.has(recipe.id);
@@ -253,23 +252,23 @@ const MealPrepScreen = () => {
                 <TouchableOpacity
                   key={recipe.id}
                   style={[
-                    styles.recipeCard,
-                    !isSelected && styles.recipeCardDeselected,
+                    cartStyles.cartRecipeCard,
+                    !isSelected && cartStyles.cartRecipeCardDeselected,
                   ]}
                   onPress={() => toggleRecipe(recipe.id)}
                   onLongPress={() => handleRemoveFromMealPrep(recipe)}
                   activeOpacity={0.7}
                 >
-                  <View style={styles.recipeImageContainer}>
+                  <View style={cartStyles.recipeImageContainer}>
                     <Image
                       source={{ uri: recipe.image }}
-                      style={styles.recipeImage}
+                      style={cartStyles.cartRecipeImage}
                       contentFit="cover"
                     />
-                    {!isSelected && <View style={styles.recipeOverlay} />}
+                    {!isSelected && <View style={cartStyles.recipeOverlay} />}
                     <View style={[
-                      styles.recipeCheckbox,
-                      isSelected && styles.recipeCheckboxSelected
+                      cartStyles.recipeCheckbox,
+                      isSelected && cartStyles.recipeCheckboxSelected
                     ]}>
                       {isSelected && (
                         <Ionicons name="checkmark" size={16} color={COLORS.white} />
@@ -278,14 +277,14 @@ const MealPrepScreen = () => {
                   </View>
                   <Text
                     style={[
-                      styles.recipeTitle,
-                      !isSelected && styles.recipeTitleDeselected,
+                      cartStyles.cartRecipeTitle,
+                      !isSelected && cartStyles.cartRecipeTitleDeselected,
                     ]}
                     numberOfLines={2}
                   >
                     {recipe.title}
                   </Text>
-                  <Text style={styles.recipeServings}>
+                  <Text style={cartStyles.cartRecipeServings}>
                     Serves {recipe.servings}
                   </Text>
                 </TouchableOpacity>
@@ -296,16 +295,16 @@ const MealPrepScreen = () => {
 
         {/* Ingredients Section - Only show if recipes are selected */}
         {selectedRecipes.size > 0 && (
-        <View style={styles.ingredientsSection}>
-          <View style={styles.ingredientsHeader}>
-            <Text style={styles.sectionTitle}>Shopping List</Text>
-            <Text style={styles.ingredientsCount}>
+        <View style={cartStyles.ingredientsSection}>
+          <View style={cartStyles.ingredientsHeader}>
+            <Text style={cartStyles.sectionTitle}>Shopping List</Text>
+            <Text style={cartStyles.ingredientsCount}>
               {combinedIngredients.length} items
             </Text>
           </View>
 
           {/* Unchecked Ingredients */}
-          <View style={[recipeDetailStyles.ingredientsList, styles.ingredientsList]}>
+          <View style={cartStyles.ingredientsList}>
             {combinedIngredients.map((ingredient, index) => {
               const isChecked = checkedIngredients.has(index);
               if (isChecked) return null;
@@ -313,20 +312,15 @@ const MealPrepScreen = () => {
               return (
                 <TouchableOpacity
                   key={index}
-                  style={recipeDetailStyles.ingredientItem}
+                  style={cartStyles.ingredientItem}
                   onPress={() => toggleIngredient(index)}
                   activeOpacity={0.7}
                 >
-                  <Text style={recipeDetailStyles.ingredientText}>
+                  <View style={cartStyles.ingredientCheckbox}>
+                  </View>
+                  <Text style={cartStyles.ingredientText}>
                     {ingredient.text}
                   </Text>
-                  <View style={recipeDetailStyles.ingredientCheck}>
-                    <Ionicons
-                      name="checkmark-circle-outline"
-                      size={20}
-                      color={COLORS.textLight}
-                    />
-                  </View>
                 </TouchableOpacity>
               );
             })}
@@ -334,15 +328,15 @@ const MealPrepScreen = () => {
 
           {/* Checked Ingredients Section - Collapsible */}
           {checkedIngredients.size > 0 && (
-            <View style={recipeDetailStyles.completedIngredientsSection}>
+            <View style={cartStyles.completedSection}>
               <TouchableOpacity
-                style={recipeDetailStyles.completedIngredientsHeader}
+                style={cartStyles.completedHeader}
                 onPress={() =>
                   setShowCompletedIngredients(!showCompletedIngredients)
                 }
                 activeOpacity={0.7}
               >
-                <Text style={recipeDetailStyles.completedIngredientsTitle}>
+                <Text style={cartStyles.completedTitle}>
                   Purchased ({checkedIngredients.size})
                 </Text>
                 <Ionicons
@@ -355,7 +349,7 @@ const MealPrepScreen = () => {
               </TouchableOpacity>
 
               {showCompletedIngredients && (
-                <View style={[recipeDetailStyles.completedIngredientsList, styles.ingredientsList]}>
+                <View style={cartStyles.ingredientsList}>
                   {combinedIngredients.map((ingredient, index) => {
                     const isChecked = checkedIngredients.has(index);
                     if (!isChecked) return null;
@@ -364,27 +358,25 @@ const MealPrepScreen = () => {
                       <TouchableOpacity
                         key={index}
                         style={[
-                          recipeDetailStyles.ingredientItem,
-                          recipeDetailStyles.completedIngredientItem,
+                          cartStyles.ingredientItem,
+                          cartStyles.ingredientItemCompleted,
                         ]}
                         onPress={() => toggleIngredient(index)}
                         activeOpacity={0.7}
                       >
+                        <View style={[
+                          cartStyles.ingredientCheckbox,
+                          cartStyles.ingredientCheckboxChecked,
+                        ]}>
+                        </View>
                         <Text
                           style={[
-                            recipeDetailStyles.ingredientText,
-                            recipeDetailStyles.completedIngredientText,
+                            cartStyles.ingredientText,
+                            cartStyles.ingredientTextCompleted,
                           ]}
                         >
                           {ingredient.text}
                         </Text>
-                        <View style={recipeDetailStyles.ingredientCheck}>
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={20}
-                            color={COLORS.primary}
-                          />
-                        </View>
                       </TouchableOpacity>
                     );
                   })}
@@ -394,27 +386,27 @@ const MealPrepScreen = () => {
           )}
 
           {/* Action Buttons */}
-          <View style={[recipeDetailStyles.actionButtonsContainer, styles.ingredientsList]}>
+          <View style={cartStyles.actionButtonsContainer}>
             <TouchableOpacity
-              style={recipeDetailStyles.secondaryActionButton}
+              style={cartStyles.secondaryButton}
               onPress={handleCopyIngredients}
               activeOpacity={0.7}
             >
-              <Ionicons name="copy-outline" size={20} color={COLORS.textLight} />
-              <Text style={recipeDetailStyles.secondaryActionButtonText}>
+              <Ionicons name="copy-outline" size={20} color={COLORS.text} />
+              <Text style={cartStyles.secondaryButtonText}>
                 Copy List
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={recipeDetailStyles.primaryActionButton}
+              style={cartStyles.primaryButton}
               onPress={() => {
                 Alert.alert("Share", "Share functionality coming soon!");
               }}
               activeOpacity={0.7}
             >
               <Ionicons name="share-outline" size={20} color={COLORS.white} />
-              <Text style={recipeDetailStyles.primaryActionButtonText}>
+              <Text style={cartStyles.primaryButtonText}>
                 Share List
               </Text>
             </TouchableOpacity>
@@ -426,112 +418,5 @@ const MealPrepScreen = () => {
   );
 };
 
-const styles = {
-  scrollContent: {
-    paddingBottom: 120, // Extra padding to ensure bottom buttons are accessible above tab bar
-  },
-  recipesSection: {
-    marginTop: 20,
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: COLORS.text,
-    marginBottom: 16,
-    paddingHorizontal: 0,
-    textAlign: "left",
-  },
-  sectionTitle2: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: COLORS.text,
-    marginBottom: 16,
-    paddingHorizontal: 20,
-    textAlign: "left",
-  },
-  recipesScrollView: {
-    paddingLeft: 20,
-  },
-  recipesContainer: {
-    paddingRight: 20,
-    gap: 12,
-  },
-  recipeCard: {
-    width: 160,
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    padding: 12,
-    marginRight: 12,
-  },
-  recipeCardDeselected: {
-    opacity: 0.6,
-  },
-  recipeImageContainer: {
-    position: "relative",
-    marginBottom: 8,
-  },
-  recipeImage: {
-    width: "100%",
-    height: 120,
-    borderRadius: 8,
-  },
-  recipeOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    borderRadius: 8,
-  },
-  recipeCheckbox: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.3)",
-    borderWidth: 2,
-    borderColor: COLORS.white,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  recipeCheckboxSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  recipeTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  recipeTitleDeselected: {
-    color: COLORS.textLight,
-  },
-  recipeServings: {
-    fontSize: 12,
-    color: COLORS.textLight,
-  },
-  ingredientsSection: {
-    paddingBottom: 20,
-  },
-  ingredientsHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-    paddingHorizontal: 20,
-  },
-  ingredientsCount: {
-    fontSize: 14,
-    color: COLORS.textLight,
-  },
-  ingredientsList: {
-    paddingHorizontal: 20,
-  },
-};
 
 export default MealPrepScreen;

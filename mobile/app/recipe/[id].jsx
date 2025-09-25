@@ -467,16 +467,11 @@ const RecipeDetailScreen = () => {
                       onPress={() => toggleIngredient(index)}
                       activeOpacity={0.7}
                     >
+                      <View style={recipeDetailStyles.ingredientCheckbox}>
+                      </View>
                       <Text style={recipeDetailStyles.ingredientText}>
                         {getScaledIngredient(ingredient)}
                       </Text>
-                      <View style={recipeDetailStyles.ingredientCheck}>
-                        <Ionicons
-                          name="checkmark-circle-outline"
-                          size={20}
-                          color={COLORS.textLight}
-                        />
-                      </View>
                     </TouchableOpacity>
                   );
                 })}
@@ -484,15 +479,15 @@ const RecipeDetailScreen = () => {
 
               {/* Marked as Done Section */}
               {checkedIngredients.size > 0 && (
-                <View style={recipeDetailStyles.completedIngredientsSection}>
+                <View style={recipeDetailStyles.completedSection}>
                   <TouchableOpacity
-                    style={recipeDetailStyles.completedIngredientsHeader}
+                    style={recipeDetailStyles.completedHeader}
                     onPress={() =>
                       setShowCompletedIngredients(!showCompletedIngredients)
                     }
                     activeOpacity={0.7}
                   >
-                    <Text style={recipeDetailStyles.completedIngredientsTitle}>
+                    <Text style={recipeDetailStyles.completedTitle}>
                       Marked as done ({checkedIngredients.size})
                     </Text>
                     <Ionicons
@@ -505,7 +500,7 @@ const RecipeDetailScreen = () => {
                   </TouchableOpacity>
 
                   {showCompletedIngredients && (
-                    <View style={recipeDetailStyles.completedIngredientsList}>
+                    <View style={recipeDetailStyles.completedList}>
                       {recipe.ingredients.map((ingredient, index) => {
                         const isChecked = checkedIngredients.has(index);
                         if (!isChecked) return null; // Skip unchecked ingredients
@@ -519,6 +514,11 @@ const RecipeDetailScreen = () => {
                             onPress={() => toggleIngredient(index)}
                             activeOpacity={0.7}
                           >
+                            <View style={[
+                              recipeDetailStyles.ingredientCheckbox,
+                              recipeDetailStyles.ingredientCheckboxChecked,
+                            ]}>
+                            </View>
                             <Text
                               style={[
                                 recipeDetailStyles.ingredientText,
@@ -527,13 +527,6 @@ const RecipeDetailScreen = () => {
                             >
                               {getScaledIngredient(ingredient)}
                             </Text>
-                            <View style={recipeDetailStyles.ingredientCheck}>
-                              <Ionicons
-                                name="checkmark-circle"
-                                size={20}
-                                color={COLORS.primary}
-                              />
-                            </View>
                           </TouchableOpacity>
                         );
                       })}

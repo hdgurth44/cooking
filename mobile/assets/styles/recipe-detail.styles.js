@@ -1,9 +1,12 @@
 import { StyleSheet, Dimensions } from "react-native";
-import { COLORS } from "../../constants/colors";
+import { COLORS, TYPOGRAPHY } from "../../constants/colors";
+import { sharedStyles } from "./shared.styles";
 
 const { height } = Dimensions.get("window");
 
 export const recipeDetailStyles = StyleSheet.create({
+  // Use shared styles for common patterns
+  ...sharedStyles,
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -141,11 +144,9 @@ export const recipeDetailStyles = StyleSheet.create({
     marginBottom: 32,
   },
   recipeMainTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
+    ...TYPOGRAPHY.h2,
     color: COLORS.text,
     marginBottom: 12,
-    lineHeight: 36,
   },
   categoriesContainer: {
     flexDirection: "row",
@@ -182,9 +183,8 @@ export const recipeDetailStyles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   summaryText: {
-    fontSize: 16,
+    ...TYPOGRAPHY.body1,
     color: COLORS.text,
-    lineHeight: 24,
     opacity: 0.8,
   },
   originalLinkButton: {
@@ -285,6 +285,10 @@ export const recipeDetailStyles = StyleSheet.create({
   sectionContainer: {
     marginBottom: 32,
   },
+  completedSection: {
+    marginTop: 16,
+    paddingHorizontal: 0,
+  },
   sectionTitleRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -300,8 +304,7 @@ export const recipeDetailStyles = StyleSheet.create({
     alignItems: "center",
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
+    ...TYPOGRAPHY.h4,
     color: COLORS.text,
     flex: 1,
   },
@@ -317,9 +320,8 @@ export const recipeDetailStyles = StyleSheet.create({
     fontWeight: "600",
   },
   descriptionText: {
-    fontSize: 16,
+    ...TYPOGRAPHY.body1,
     color: COLORS.text,
-    lineHeight: 24,
     textAlign: "left",
   },
   inlineLinkContainer: {
@@ -404,36 +406,29 @@ export const recipeDetailStyles = StyleSheet.create({
   },
   ingredientText: {
     flex: 1,
-    fontSize: 16,
+    ...TYPOGRAPHY.body1,
     color: COLORS.text,
-    lineHeight: 22,
   },
-  ingredientCheck: {
-    opacity: 0.5,
-  },
-  completedIngredientsSection: {
-    marginTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.textLight + "20",
-    paddingTop: 16,
-    paddingHorizontal: 20,
-  },
-  completedIngredientsHeader: {
-    flexDirection: "row",
+  
+  // Consistent checkbox styles matching cart
+  ingredientCheckbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+    marginRight: 12,
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-    paddingHorizontal: 4,
+    justifyContent: "center",
   },
-  completedIngredientsTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: COLORS.textLight,
+  
+  ingredientCheckboxChecked: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
-  completedIngredientsList: {
-    gap: 6,
-    marginTop: 8,
-  },
+  // Completed ingredients styles now come from shared styles
+  // completedSection, completedHeader, completedTitle, completedList
   completedIngredientItem: {
     opacity: 0.6,
     borderBottomColor: COLORS.textLight + "10",
@@ -554,8 +549,7 @@ export const recipeDetailStyles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
   stepText: {
-    fontSize: 16,
-    lineHeight: 24,
+    ...TYPOGRAPHY.body1,
     color: COLORS.text,
   },
   stepTextCompleted: {

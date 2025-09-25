@@ -1,38 +1,15 @@
 import { StyleSheet } from "react-native";
-import { COLORS } from "../../constants/colors";
+import { COLORS, TYPOGRAPHY } from "../../constants/colors";
+import { sharedStyles } from "./shared.styles";
 
 export const favoritesStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  topHeader: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
+  // Use shared styles for common patterns
+  ...sharedStyles,
+  
+  // Favorites-specific styles only
   screenTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: COLORS.text,
+    ...TYPOGRAPHY.h2,
     paddingHorizontal: 20,
-  },
-  shareButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.card,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: COLORS.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   profileSection: {
     alignItems: "center",
@@ -65,8 +42,7 @@ export const favoritesStyles = StyleSheet.create({
     gap: 8,
   },
   userName: {
-    fontSize: 24,
-    fontWeight: "600",
+    ...TYPOGRAPHY.h3,
     color: COLORS.text,
     letterSpacing: -0.3,
   },
@@ -78,8 +54,7 @@ export const favoritesStyles = StyleSheet.create({
     gap: 12,
   },
   nameInput: {
-    fontSize: 24,
-    fontWeight: "600",
+    ...TYPOGRAPHY.h3,
     color: COLORS.text,
     letterSpacing: -0.3,
     textAlign: "center",
@@ -129,23 +104,22 @@ export const favoritesStyles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
+  settingButtonWithBorder: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
   settingText: {
     flex: 1,
-    fontSize: 16,
+    ...TYPOGRAPHY.body1,
     fontWeight: "500",
     color: COLORS.text,
     marginLeft: 12,
   },
-  favoritesHeader: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-  favoritesTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: COLORS.text,
-    letterSpacing: -0.3,
-  },
+  // Removed favoritesHeader and favoritesTitle - now using shared sectionTitle
   statsContainer: {
     flexDirection: "row",
     paddingHorizontal: 16,
@@ -176,25 +150,33 @@ export const favoritesStyles = StyleSheet.create({
     marginBottom: 8,
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: "bold",
+    ...TYPOGRAPHY.h5,
     color: COLORS.text,
   },
+  // Match home screen recipe section layout
   recipesSection: {
-    paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingHorizontal: 20,
+    marginTop: 8,
   },
+  
+  // Override shared sectionTitle to match local padding
+  sectionTitle: {
+    ...TYPOGRAPHY.h4,
+    color: COLORS.text,
+    marginBottom: 16,
+    paddingHorizontal: 0, // No additional padding since recipesSection already has padding
+  },
+  
+  // Keep favorites-specific grid layout only  
   recipesGrid: {
-    gap: 16,
+    gap: 4,
   },
   row: {
     justifyContent: "space-between",
+    gap: 4,
   },
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: 64,
-    paddingHorizontal: 32,
-  },
+  
+  // Unique empty state icon for favorites
   emptyIconContainer: {
     width: 120,
     height: 120,
@@ -207,19 +189,8 @@ export const favoritesStyles = StyleSheet.create({
     borderColor: COLORS.border,
     borderStyle: "dashed",
   },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: COLORS.text,
-    marginBottom: 12,
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    color: COLORS.textLight,
-    textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 22,
-  },
+  
+  // Empty state styles for NoFavoritesFound component
   exploreButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -229,9 +200,9 @@ export const favoritesStyles = StyleSheet.create({
     borderRadius: 24,
     gap: 8,
   },
+  
   exploreButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
+    ...TYPOGRAPHY.button,
     color: COLORS.white,
   },
 });

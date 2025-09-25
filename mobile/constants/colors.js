@@ -1,4 +1,5 @@
 // Note that we create a folder in the root of the mobile application called constants and in there we store the colors which we then use in the different style sheets. Quite neat.
+import { TYPOGRAPHY } from './fonts';
 
 const coffeeTheme = {
   primary: "#8B593E",
@@ -113,3 +114,6 @@ export const THEMES = {
 
 // 👇 change this to switch theme
 export const COLORS = THEMES.ocean;
+
+// Export typography styles for easy access
+export { TYPOGRAPHY };
