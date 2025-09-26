@@ -90,10 +90,51 @@ export const sharedStyles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
   },
-  
+
+  primaryButtonPressed: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    opacity: 0.8,
+  },
+
   primaryButtonText: {
     ...TYPOGRAPHY.button,
     color: COLORS.white,
+  },
+
+  // Accent button for secondary CTAs
+  accentButton: {
+    backgroundColor: COLORS.accent || COLORS.primary,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+
+  accentButtonPressed: {
+    backgroundColor: COLORS.accent || COLORS.primary,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    opacity: 0.8,
+  },
+
+  accentButtonText: {
+    ...TYPOGRAPHY.button,
+    color: COLORS.onAccent || COLORS.white,
   },
   
   secondaryButton: {
@@ -108,10 +149,40 @@ export const sharedStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  
+
+  secondaryButtonPressed: {
+    backgroundColor: COLORS.pressed || COLORS.border,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+
   secondaryButtonText: {
     ...TYPOGRAPHY.button,
     color: COLORS.text,
+  },
+
+  // Disabled button states
+  disabledButton: {
+    backgroundColor: COLORS.disabled || COLORS.border,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+
+  disabledButtonText: {
+    ...TYPOGRAPHY.button,
+    color: COLORS.disabled || COLORS.textLight,
   },
   
   // Common empty states
@@ -131,7 +202,7 @@ export const sharedStyles = StyleSheet.create({
   
   emptyDescription: {
     ...TYPOGRAPHY.body1,
-    color: COLORS.textLight,
+    color: COLORS.textMuted || COLORS.textLight,
     textAlign: "center",
     marginBottom: 24,
   },
@@ -175,7 +246,7 @@ export const sharedStyles = StyleSheet.create({
   
   recipeCardDescription: {
     ...TYPOGRAPHY.caption,
-    color: COLORS.textLight,
+    color: COLORS.textMuted || COLORS.textLight,
     marginBottom: 8,
   },
   
@@ -193,7 +264,7 @@ export const sharedStyles = StyleSheet.create({
   recipeCardMetaText: {
     ...TYPOGRAPHY.caption,
     fontSize: 11,
-    color: COLORS.textLight,
+    color: COLORS.textMuted || COLORS.textLight,
     marginLeft: 4,
     fontWeight: "500",
   },
@@ -232,7 +303,7 @@ export const sharedStyles = StyleSheet.create({
   
   messageDescription: {
     ...TYPOGRAPHY.body1,
-    color: COLORS.textLight,
+    color: COLORS.textMuted || COLORS.textLight,
     textAlign: "center",
     marginBottom: 32,
   },
@@ -264,7 +335,7 @@ export const sharedStyles = StyleSheet.create({
   
   completedTitle: {
     ...TYPOGRAPHY.h6,
-    color: COLORS.textLight,
+    color: COLORS.textMuted || COLORS.textLight,
   },
   
   completedList: {
@@ -327,6 +398,62 @@ export const sharedStyles = StyleSheet.create({
   
   ingredientTextCompleted: {
     textDecorationLine: "line-through",
-    color: COLORS.textLight,
+    color: COLORS.textMuted || COLORS.textLight,
+  },
+
+  // Link styles
+  linkText: {
+    ...TYPOGRAPHY.body1,
+    color: COLORS.link || COLORS.primary,
+    fontWeight: "600",
+  },
+
+  // Status indicators
+  successText: {
+    ...TYPOGRAPHY.body2,
+    color: COLORS.success || "#22C55E",
+    fontWeight: "600",
+  },
+
+  warningText: {
+    ...TYPOGRAPHY.body2,
+    color: COLORS.warning || "#F59E0B",
+    fontWeight: "600",
+  },
+
+  dangerText: {
+    ...TYPOGRAPHY.body2,
+    color: COLORS.danger || "#EF4444",
+    fontWeight: "600",
+  },
+
+  // Overlay for modals/bottom sheets
+  overlay: {
+    flex: 1,
+    backgroundColor: COLORS.overlay || "rgba(0,0,0,0.5)",
+  },
+
+  // Interactive element with pressed state
+  touchableItem: {
+    backgroundColor: COLORS.card,
+    borderRadius: 12,
+    padding: 16,
+  },
+
+  touchableItemPressed: {
+    backgroundColor: COLORS.pressed || COLORS.border,
+    borderRadius: 12,
+    padding: 16,
+  },
+
+  // Muted text variations
+  mutedText: {
+    ...TYPOGRAPHY.body2,
+    color: COLORS.textMuted || COLORS.textLight,
+  },
+
+  mutedCaption: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textMuted || COLORS.textLight,
   },
 });

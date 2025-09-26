@@ -99,6 +99,7 @@ export const searchStyles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: COLORS.background,
   },
   recipesGrid: {
     gap: 16,
@@ -122,7 +123,7 @@ export const searchStyles = StyleSheet.create({
   },
   emptyDescription: {
     fontSize: 14,
-    color: COLORS.textLight,
+    color: COLORS.textMuted || COLORS.textLight,
     textAlign: "center",
     lineHeight: 20,
   },

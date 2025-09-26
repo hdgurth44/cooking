@@ -589,7 +589,7 @@ const RecipeDetailScreen = () => {
               <Ionicons
                 name="copy-outline"
                 size={20}
-                color={COLORS.textLight}
+                color={COLORS.text}
               />
               <Text style={recipeDetailStyles.secondaryActionButtonText}>
                 Copy
