@@ -16,6 +16,12 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "daniel.gurth@yahoo.com",
+        "appleTeamId": "KYB4CNKV58",
+        "ascAppId": "6753070747"
+      }
+    }
   }
 }

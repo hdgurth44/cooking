@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "yummay",
+      "bundleIdentifier": "com.hdgurth.yummay",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
