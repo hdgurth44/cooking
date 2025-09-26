@@ -12,6 +12,12 @@ export const FONTS = {
   ArchivoMedium: 'Archivo-Medium',
   ArchivoSemiBold: 'Archivo-SemiBold',
   ArchivoBold: 'Archivo-Bold',
+  
+  // Striper weights
+  StriperRegular: 'Striper-Regular',
+  
+  // Boxing weights
+  BoxingRegular: 'Boxing-Regular',
 };
 
 // Font families for easy usage
@@ -22,6 +28,8 @@ export const FONT_FAMILIES = {
   bodyMedium: FONTS.ArchivoMedium,
   bodySemiBold: FONTS.ArchivoSemiBold,
   bodyBold: FONTS.ArchivoBold,
+  decorative: FONTS.StriperRegular,
+  display: FONTS.BoxingRegular,
 };
 
 // Font loading map for expo-font
@@ -33,6 +41,8 @@ export const FONT_ASSETS = {
   [FONTS.ArchivoMedium]: require('../assets/fonts/Archivo-Variable.ttf'),
   [FONTS.ArchivoSemiBold]: require('../assets/fonts/Archivo-Variable.ttf'),
   [FONTS.ArchivoBold]: require('../assets/fonts/Archivo-Variable.ttf'),
+  [FONTS.StriperRegular]: require('../assets/fonts/Striper-Regular.ttf'),
+  [FONTS.BoxingRegular]: require('../assets/fonts/Boxing-Regular.ttf'),
 };
 
 // Typography styles with sizes and line heights
