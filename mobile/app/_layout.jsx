@@ -6,6 +6,7 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import SafeScreen from "../components/SafeScreen";
+import ErrorBoundary from "../components/ErrorBoundary";
 import { FONT_ASSETS } from "../constants/fonts";
 
 // Keep the splash screen visible while we fetch resources
@@ -24,18 +25,31 @@ export default function RootLayout() {
     return null;
   }
 
+  const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  if (!publishableKey) {
+    throw new Error(
+      'Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your environment'
+    );
+  }
+
   return (
-    <ClerkProvider tokenCache={tokenCache}>
-      <SafeScreen>
-        <StatusBar style="dark" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            gestureEnabled: true,
-            gestureDirection: "horizontal",
-          }}
-        />
-      </SafeScreen>
-    </ClerkProvider>
+    <ErrorBoundary>
+      <ClerkProvider 
+        publishableKey={publishableKey}
+        tokenCache={tokenCache}
+      >
+        <SafeScreen>
+          <StatusBar style="dark" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              gestureEnabled: true,
+              gestureDirection: "horizontal",
+            }}
+          />
+        </SafeScreen>
+      </ClerkProvider>
+    </ErrorBoundary>
   );
 }

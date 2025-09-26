@@ -123,6 +123,7 @@ The app uses a comprehensive theme system in `constants/colors.js`:
 
 ### Required Environment Variables (.env)
 ```bash
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 EXPO_PUBLIC_SUPABASE_URL=https://ivvmxqqgumpczlegkaxo.supabase.co
 EXPO_PUBLIC_SUPABASE_KEY=your_supabase_anon_key
 ```
