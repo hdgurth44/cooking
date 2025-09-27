@@ -13,8 +13,11 @@ import { useRouter } from "expo-router";
 import { useSignIn, useSignUp } from "@clerk/clerk-expo";
 import { authStyles } from "../../assets/styles/auth.styles";
 import { Image } from "expo-image";
+import ENV from "../../config/env";
 import { COLORS } from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
+import { getAuthErrorMessage } from "../../utils/authErrors";
+import DebugInfo from "../../components/DebugInfo";
 
 const AuthScreen = () => {
   const router = useRouter();
@@ -30,16 +33,30 @@ const AuthScreen = () => {
       return;
     }
 
-    if (!signInLoaded || !signUpLoaded) return;
+    if (!signInLoaded || !signUpLoaded) {
+      Alert.alert("Loading", "Authentication is still loading. Please wait a moment and try again.");
+      return;
+    }
+
+    // Validate environment using our config
+    const publishableKey = ENV.CLERK_PUBLISHABLE_KEY;
+    if (!publishableKey) {
+      console.error("Missing Clerk publishable key");
+      Alert.alert("Configuration Error", "Authentication is not properly configured. Please contact support.");
+      return;
+    }
 
     setLoading(true);
 
     try {
       // First try to sign in (existing user)
       try {
+        console.log("Attempting sign-in for:", emailAddress);
         const signInAttempt = await signIn.create({
           identifier: emailAddress,
         });
+
+        console.log("Sign-in attempt result:", signInAttempt.status);
 
         // If we need email verification for sign-in, prepare it
         if (signInAttempt.status === "needs_first_factor") {
@@ -48,6 +65,7 @@ const AuthScreen = () => {
           );
 
           if (firstFactor) {
+            console.log("Preparing email verification for sign-in");
             await signIn.prepareFirstFactor({
               strategy: "email_code",
               emailAddressId: firstFactor.emailAddressId,
@@ -62,7 +80,20 @@ const AuthScreen = () => {
               }
             });
             return;
+          } else {
+            console.error("No email_code factor found in supportedFirstFactors");
+            Alert.alert("Error", "Email verification is not available. Please try again.");
+            return;
           }
+        } else if (signInAttempt.status === "complete") {
+          // User is already signed in somehow
+          console.log("Sign-in completed immediately");
+          router.replace("/(tabs)");
+          return;
+        } else {
+          console.log("Unexpected sign-in status:", signInAttempt.status);
+          Alert.alert("Error", "Unexpected authentication state. Please try again.");
+          return;
         }
       } catch (signInError) {
         // If sign-in fails (user doesn't exist), try sign-up
@@ -70,11 +101,13 @@ const AuthScreen = () => {
 
         if (signInError.errors?.[0]?.code === "form_identifier_not_found") {
           // User doesn't exist, create new account
+          console.log("Creating new account for:", emailAddress);
           await signUp.create({
             emailAddress,
           });
 
           // Prepare email verification for sign-up
+          console.log("Preparing email verification for sign-up");
           await signUp.prepareEmailAddressVerification({
             strategy: "email_code"
           });
@@ -90,16 +123,17 @@ const AuthScreen = () => {
           return;
         }
 
-        // Some other error occurred
-        throw signInError;
+        // Some other error occurred - use proper error handling
+        console.error("Sign-in error:", JSON.stringify(signInError, null, 2));
+        const errorMessage = getAuthErrorMessage(signInError);
+        Alert.alert("Sign-in Error", errorMessage);
+        return;
       }
-
-      // If we get here without redirecting, show generic error
-      Alert.alert("Error", "Something went wrong. Please try again.");
 
     } catch (err) {
       console.error("Auth error:", JSON.stringify(err, null, 2));
-      Alert.alert("Error", "Unable to continue. Please check your email address and try again.");
+      const errorMessage = getAuthErrorMessage(err);
+      Alert.alert("Authentication Error", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -117,6 +151,7 @@ const AuthScreen = () => {
 
   return (
     <View style={authStyles.container}>
+      <DebugInfo visible={__DEV__} />
       <KeyboardAvoidingView
         style={authStyles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}

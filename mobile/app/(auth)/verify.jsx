@@ -14,6 +14,7 @@ import { useSignIn, useSignUp } from "@clerk/clerk-expo";
 import { authStyles } from "../../assets/styles/auth.styles";
 import { Image } from "expo-image";
 import { COLORS } from "../../constants/colors";
+import { getAuthErrorMessage } from "../../utils/authErrors";
 
 const VerifyScreen = () => {
   const router = useRouter();
@@ -66,11 +67,9 @@ const VerifyScreen = () => {
     } catch (err) {
       console.error("Verification error:", JSON.stringify(err, null, 2));
 
-      // Generic error message for security (don't reveal specific issues)
-      Alert.alert(
-        "Verification Failed",
-        "That code didn't work. Please check your email and try again, or change your email address."
-      );
+      // Use proper error handling
+      const errorMessage = getAuthErrorMessage(err);
+      Alert.alert("Verification Failed", errorMessage);
     } finally {
       setLoading(false);
     }
