@@ -6,9 +6,8 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { Alert } from "react-native";
 import { useEffect } from "react";
-import Constants from "expo-constants";
 import SafeScreen from "../components/SafeScreen";
-import ErrorBoundary from "../components/ErrorBoundary";
+import StableErrorBoundary from "../components/StableErrorBoundary";
 import { FONT_ASSETS } from "../constants/fonts";
 import { logEnvironmentStatus } from "../utils/envValidation";
 import ENV, { getEnvironmentInfo } from "../config/env";
@@ -28,6 +27,21 @@ export default function RootLayout() {
   // Log environment status on app startup for debugging
   useEffect(() => {
     logEnvironmentStatus();
+
+    // Add global error handler for production
+    if (!__DEV__) {
+      const originalHandler = global.ErrorUtils.getGlobalHandler();
+      global.ErrorUtils.setGlobalHandler((error, isFatal) => {
+        console.error('=== GLOBAL ERROR HANDLER ===');
+        console.error('Error:', error);
+        console.error('Is Fatal:', isFatal);
+        console.error('Timestamp:', new Date().toISOString());
+        console.error('============================');
+
+        // Call the original handler
+        originalHandler(error, isFatal);
+      });
+    }
   }, []);
 
   if (!fontsLoaded && !fontError) {
@@ -58,7 +72,7 @@ export default function RootLayout() {
   }
 
   return (
-    <ErrorBoundary>
+    <StableErrorBoundary>
       <ClerkProvider 
         publishableKey={publishableKey}
         tokenCache={tokenCache}
@@ -74,6 +88,6 @@ export default function RootLayout() {
           />
         </SafeScreen>
       </ClerkProvider>
-    </ErrorBoundary>
+    </StableErrorBoundary>
   );
 }

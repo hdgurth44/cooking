@@ -10,9 +10,15 @@ import { FavoritesIcon, IndexIcon, CartIcon, SearchIcon, CreateIcon } from "../.
 const TabsLayout = () => {
   const { isSignedIn } = useAuth();
 
+  console.log('=== TABS LAYOUT RENDER ===');
+  console.log('isSignedIn:', isSignedIn);
+
   if (!isSignedIn) {
+    console.log('User not signed in, redirecting to auth');
     return <Redirect href={"/(auth)/auth"} />;
   }
+
+  console.log('User signed in, rendering tabs');
 
   // Custom gradient background component for tab bar
   const TabBarBackground = () => {

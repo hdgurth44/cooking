@@ -4,7 +4,7 @@ import * as Clipboard from "expo-clipboard";
 import { COLORS } from "../constants/colors";
 import { TYPOGRAPHY } from "../constants/fonts";
 
-class ErrorBoundary extends React.Component {
+class ErrorBoundaryComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
@@ -16,8 +16,22 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log the error to console in development
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    // Enhanced logging for debugging
+    console.error('=== ERROR BOUNDARY CAUGHT AN ERROR ===');
+    console.error('Error:', error);
+    console.error('Error Message:', error?.message);
+    console.error('Error Stack:', error?.stack);
+    console.error('Component Stack:', errorInfo?.componentStack);
+    console.error('Environment:', __DEV__ ? 'development' : 'production');
+    console.error('Timestamp:', new Date().toISOString());
+
+    // Additional context for production debugging
+    if (!__DEV__) {
+      console.error('User Agent:', navigator?.userAgent || 'Unknown');
+      console.error('Platform:', require('react-native').Platform.OS);
+      console.error('App State:', require('react-native').AppState.currentState);
+    }
+    console.error('==========================================');
 
     this.setState({
       error: error,
@@ -25,7 +39,24 @@ class ErrorBoundary extends React.Component {
     });
 
     // In production, you could send this to a crash reporting service
-    // Example: Sentry.captureException(error, { extra: errorInfo });
+    // For now, we'll keep detailed console logging for TestFlight debugging
+    if (!__DEV__) {
+      try {
+        // Create a detailed error report for production
+        const errorReport = {
+          message: error?.message || 'Unknown error',
+          stack: error?.stack || 'No stack trace',
+          componentStack: errorInfo?.componentStack || 'No component stack',
+          timestamp: new Date().toISOString(),
+          environment: 'production',
+          platform: require('react-native').Platform.OS
+        };
+
+        console.warn('PRODUCTION ERROR REPORT:', JSON.stringify(errorReport, null, 2));
+      } catch (reportError) {
+        console.error('Failed to create error report:', reportError);
+      }
+    }
   }
 
   handleRestart = () => {
@@ -193,5 +224,9 @@ const styles = {
     color: COLORS.white,
   },
 };
+
+// Create a stable default export to avoid import resolution issues
+const ErrorBoundary = ErrorBoundaryComponent;
+ErrorBoundary.displayName = 'ErrorBoundary';
 
 export default ErrorBoundary;

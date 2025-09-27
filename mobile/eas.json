@@ -23,10 +23,21 @@
     },
     "production": {
       "autoIncrement": true,
+      "distribution": "store",
+      "cache": {
+        "disabled": false
+      },
       "env": {
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "@env:EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY",
         "EXPO_PUBLIC_SUPABASE_URL": "@env:EXPO_PUBLIC_SUPABASE_URL",
         "EXPO_PUBLIC_SUPABASE_KEY": "@env:EXPO_PUBLIC_SUPABASE_KEY"
+      }
+    },
+    "production-local": {
+      "extends": "production",
+      "distribution": "internal",
+      "ios": {
+        "buildConfiguration": "Release"
       }
     }
   },
