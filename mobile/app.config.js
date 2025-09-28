@@ -28,19 +28,19 @@ export default {
     },
     web: {
       output: "static",
-      favicon: "./assets/images/favicon.png",
+      favicon: "./assets/images/favicon.ico",
     },
     plugins: [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/splash-icon.png",
+          image: "./assets/images/android-icon-foreground.png",
           imageWidth: 200,
           resizeMode: "contain",
-          backgroundColor: "#ffffff",
+          backgroundColor: "#0F0E10", // Using creme theme background color
           dark: {
-            backgroundColor: "#000000",
+            backgroundColor: "#0F0E10", // Same color for dark mode consistency
           },
         },
       ],
