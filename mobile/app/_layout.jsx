@@ -64,10 +64,23 @@ export default function RootLayout() {
     return null;
   }
 
-  // Validate key format but don't crash immediately
-  if (!publishableKey.startsWith('pk_test_') && !publishableKey.startsWith('pk_live_')) {
-    console.error('CRITICAL: Invalid Clerk key format:', publishableKey.substring(0, 10) + '...');
-    Alert.alert('Configuration Error', `Invalid Clerk key format. Expected pk_test_ or pk_live_, got: ${publishableKey.substring(0, 8)}...`);
+  // Validate key format and catch common configuration errors
+  const isValidKeyFormat = publishableKey.startsWith('pk_test_') || publishableKey.startsWith('pk_live_');
+  const isEnvVarReference = publishableKey.includes('@env:') || publishableKey.includes('process.env') ||
+                           publishableKey.includes('EXPO_PUBLIC_');
+
+  if (!isValidKeyFormat || isEnvVarReference) {
+    console.error('CRITICAL: Invalid Clerk key format or unresolved environment variable');
+    console.error('Received key:', publishableKey.substring(0, 20) + '...');
+
+    let errorMessage = 'Invalid Clerk key format.';
+    if (isEnvVarReference) {
+      errorMessage = 'Environment variable not resolved. The app.config.js may not be loading .env properly.';
+    } else {
+      errorMessage = `Expected pk_test_ or pk_live_, got: ${publishableKey.substring(0, 15)}...`;
+    }
+
+    Alert.alert('Configuration Error', errorMessage);
     return null;
   }
 

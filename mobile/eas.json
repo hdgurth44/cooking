@@ -8,17 +8,13 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "@env:EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY",
-        "EXPO_PUBLIC_SUPABASE_URL": "@env:EXPO_PUBLIC_SUPABASE_URL",
-        "EXPO_PUBLIC_SUPABASE_KEY": "@env:EXPO_PUBLIC_SUPABASE_KEY"
+        "APP_ENV": "development"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "@env:EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY",
-        "EXPO_PUBLIC_SUPABASE_URL": "@env:EXPO_PUBLIC_SUPABASE_URL",
-        "EXPO_PUBLIC_SUPABASE_KEY": "@env:EXPO_PUBLIC_SUPABASE_KEY"
+        "APP_ENV": "staging"
       }
     },
     "production": {
@@ -28,9 +24,7 @@
         "disabled": false
       },
       "env": {
-        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "@env:EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY",
-        "EXPO_PUBLIC_SUPABASE_URL": "@env:EXPO_PUBLIC_SUPABASE_URL",
-        "EXPO_PUBLIC_SUPABASE_KEY": "@env:EXPO_PUBLIC_SUPABASE_KEY"
+        "APP_ENV": "production"
       }
     },
     "production-local": {
