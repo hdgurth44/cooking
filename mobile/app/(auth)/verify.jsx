@@ -36,6 +36,11 @@ const VerifyScreen = () => {
     return email && DEMO_ACCOUNTS.hasOwnProperty(email.toLowerCase());
   };
 
+  // Check if this is a Clerk test email (for development)
+  const isClerkTestEmail = (email) => {
+    return email && email.toLowerCase().includes('+clerk_test');
+  };
+
   const handleVerification = async () => {
     if (!code) {
       Alert.alert("Missing Code", "Please enter the 6-digit code to continue.");
@@ -46,6 +51,15 @@ const VerifyScreen = () => {
 
     setLoading(true);
 
+    // Debug logging
+    console.log('=== VERIFICATION DEBUG ===');
+    console.log('Email:', email);
+    console.log('Code:', code);
+    console.log('Mode:', mode);
+    console.log('Is demo account:', isDemoAccount(email));
+    console.log('Is Clerk test email:', isClerkTestEmail(email));
+    console.log('==========================');
+
     try {
       // Check if this is a demo account with hardcoded verification
       if (isDemoAccount(email)) {
@@ -53,15 +67,13 @@ const VerifyScreen = () => {
         if (code === expectedCode) {
           console.log("Demo account verification successful for:", email);
           
-          // For demo accounts, we'll create a temporary session
-          // This bypasses Clerk's normal verification flow
+          // For demo accounts, try normal Clerk flow first, but provide fallback
           if (mode === "signin") {
             try {
-              // Attempt normal sign-in first, but if it fails due to verification,
-              // we'll handle it as a successful demo login
+              // First attempt normal Clerk verification
               const signInAttempt = await signIn.attemptFirstFactor({
                 strategy: "email_code",
-                code: expectedCode, // Use the expected code
+                code,
               });
 
               if (signInAttempt.status === "complete") {
@@ -69,21 +81,22 @@ const VerifyScreen = () => {
                 router.replace("/(tabs)");
                 return;
               }
-            } catch (_demoSignInError) {
-              // If normal sign-in fails, show success message for demo
-              console.log("Demo account sign-in completed (bypassed verification)");
+            } catch (clerkError) {
+              console.log("Clerk verification failed for demo account:", clerkError);
+              // If Clerk verification fails, it means the demo account doesn't exist in Clerk
+              // Show helpful message to create the account first
               Alert.alert(
-                "Demo Account", 
-                "Demo login successful! Note: This is a demo account for App Store review purposes.",
-                [{ text: "Continue", onPress: () => router.replace("/(tabs)") }]
+                "Demo Account Setup Required", 
+                "The demo account needs to be created in Clerk first. Please:\n\n1. Go to your Clerk Dashboard\n2. Create user: apple@tester.com\n3. Or use a Clerk test email: apple+clerk_test@tester.com with code 424242",
+                [{ text: "OK" }]
               );
               return;
             }
           } else if (mode === "signup") {
-            // For demo account signup, show informational message
+            // For demo account signup, redirect to signin
             Alert.alert(
               "Demo Account", 
-              "This demo account already exists. Please use sign-in mode instead.",
+              "This demo account already exists. Please go back and use sign-in instead.",
               [{ text: "OK", onPress: () => router.back() }]
             );
             return;
@@ -97,7 +110,7 @@ const VerifyScreen = () => {
         }
       }
 
-      // Normal verification flow for non-demo accounts
+      // Normal verification flow for regular accounts and Clerk test emails
       if (mode === "signin") {
         // Handle sign-in verification
         const signInAttempt = await signIn.attemptFirstFactor({
@@ -165,6 +178,8 @@ const VerifyScreen = () => {
           <Text style={authStyles.subtitle}>
             {isDemoAccount(email) 
               ? `Demo account detected. Use code: ${DEMO_ACCOUNTS[email.toLowerCase()]}`
+              : isClerkTestEmail(email)
+              ? `Test email detected. Use code: 424242`
               : `We sent a code to ${email}.`
             }
           </Text>
